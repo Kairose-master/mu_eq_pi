@@ -95,5 +95,5 @@ If you use this work in research:
 
 ## ❤️ Credits
 
-Developed by [진우 (Jinwoo Jang)] —  
+Developed by [진우 (Jinu Jang)] —  
 Part of the ongoing **ETC (Existential Topologic Collapse)** research line and the Kairosé DSL family.
