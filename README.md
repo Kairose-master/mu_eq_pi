@@ -76,7 +76,7 @@ If you use this work in research:
 
 ```bibtex
 @misc{flatten-state-monad,
-  author    = {Jinwoo Jang},
+  author    = {Jinu Jang},
   title     = {Flattening the State Monad via Idempotent Projection in Vector Spaces},
   year      = {2025},
   note      = {Lean 4 formalisation, GitHub repository}
