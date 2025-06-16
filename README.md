@@ -6,8 +6,6 @@ This repository contains the full formalisation and supporting materials for the
 > ∎ All proofs are verified in **Lean 4** using `mathlib4`  
 > ∎ Formal DSL application structure for **ETC** and **Kairosé DSL**  
 > ∎ Research focus: **Monadic collapse ≈ geometric projection**
-> ∎I'm gonna upload whole paper to arxiv but I'm not endorsed so if you authorized please endorse me😢
-> ∎My arXiv ID: RUA_jinu
 
 ---
 
