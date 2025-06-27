@@ -1,7 +1,7 @@
 /-
-  (ℝ-) 벡터공간을 래핑한 간단 구조체
-  carrier : Type
-  inst    : Module ℝ carrier
+  매우 얇은 ℝ‑벡터공간 래퍼
+  carrier : underlying type
+  _inst   : Module ℝ carrier
 -/
 import Mathlib.Algebra.Module.Basic
 
