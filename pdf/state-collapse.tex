@@ -1,0 +1,179 @@
+\documentclass[12pt]{article}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{geometry}
+\usepackage[colorlinks]{hyperref}
+
+\geometry{margin=1in}
+
+\title{Formal Appendix: State--Collapse Theorem}
+\author{Jinu Jang}
+\date{v1.1 -- June 27, 2025}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+% shorthand
+\newcommand{\Set}{\mathbf{Set}}
+\newcommand{\Vect}{\mathbf{Vect}_{\mathbb R}}
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\RR}{\mathbb R}
+
+\begin{document}
+\maketitle
+
+\section*{0.\;Notation}
+\begin{itemize}
+  \item $\Set$ – category of sets and functions.
+  \item $\Vect$ – category of real vector spaces and linear maps.
+  \item $S$ – fixed non‐empty \emph{state set}.
+  \item $\RR^{X}$ – free vector space on $X$ with basis
+        $\{\delta_x\}_{x\in X}$.
+  \item $\otimes$ – algebraic tensor product over $\RR$.
+\end{itemize}
+
+\bigskip
+\section*{1.\;The state monad \(T_S\)}
+\[
+T_S X \;:=\; S \Rightarrow (S\times X).
+\]
+
+\paragraph{Unit.}
+\[
+\eta_X(x)(s)\;:=\;(s,x).
+\]
+
+\paragraph{Multiplication.}
+\[
+\mu_X : T_S T_S X \longrightarrow T_S X,
+\qquad
+\mu_X(\Phi)(s) \;:=\; \Phi(s)\!\bigl(\pi_1\Phi(s)\bigr).
+\]
+
+\paragraph{Monad‐algebra law.}
+\[
+\mu_X \circ T_S\mu_X \;=\; \mu_X \circ \mu_{T_S X}.
+\tag*{(\*)}
+\]
+
+\bigskip
+\section*{2.\;Free \(T_S\)-algebras and \(\operatorname{Alg}_{T_S}\)}
+A \(T_S\)-algebra is a pair \((A,\alpha)\) with
+$\alpha:T_SA\to A$ obeying the usual axioms.
+The free algebra on a set $X$ is
+\[
+\bigl(T_S X,\;\mu_X\bigr),
+\]
+and \(\operatorname{Alg}_{T_S}\) has morphisms
+\(f:(A,\alpha)\to(B,\beta)\) satisfying
+\(\beta\circ T_S f = f\circ\alpha\).
+
+\bigskip
+\section*{3.\;The vector‐space functor \(\mathcal F\)}
+\[
+\boxed{
+  \mathcal F:\Set\longrightarrow\Vect,
+  \quad
+  \mathcal F(X)=\RR^{S}\otimes\RR^{X},
+  \quad
+  \mathcal F(f)=\id_{\RR^{S}}\otimes\RR^{f}.
+}
+\]
+
+\bigskip
+\section*{4.\;Split idempotent pair \(P,i\)}
+\[
+\begin{aligned}
+P_{S,X}&:(\RR^{S}\otimes\RR^{S})\otimes\RR^{X}\to
+          \RR^{S}\otimes\RR^{X},
+&
+P(e_{s_1}\!\otimes\!e_{s_2}\!\otimes\!\delta_x)
+      &=e_{s_2}\!\otimes\!\delta_x,\\[6pt]
+i_{S,X}&:\RR^{S}\otimes\RR^{X}\to
+          (\RR^{S}\otimes\RR^{S})\otimes\RR^{X},
+&
+i(e_s\!\otimes\!\delta_x)
+      &=(e_s\!\otimes\!e_s)\!\otimes\!\delta_x.
+\end{aligned}
+\]
+
+\paragraph{Linearity.}
+Both maps extend $\RR$‐linearly from the basis.
+\[
+P\circ i=\id_{\RR^{S}\otimes\RR^{X}},\qquad
+e_{S,X}:=i\circ P,\; e_{S,X}^2=e_{S,X}.
+\]
+
+\paragraph{Naturality.}
+For every function \(f:X\to Y\),
+\[
+P_{S,Y}\circ(\id\otimes\RR^{f})
+=(\id\otimes\RR^{f})\circ P_{S,X},
+\quad i,\;e\text{ likewise}.
+\]
+
+\bigskip
+\section*{5.\;Reshuffle isomorphism \(\theta\)}
+\[
+\theta_X :
+\mathcal F(T_S X) \;\xrightarrow{\;\cong\;}
+(\RR^{S}\otimes\RR^{S})\otimes\RR^{X},
+\quad
+\theta_X\bigl(e_{s_1}\!\otimes\!\delta_{\langle s_2,x\rangle}\bigr)
+        =e_{s_1}\!\otimes\!e_{s_2}\!\otimes\!\delta_x.
+\]
+Inverse:
+\[
+\theta_X^{-1}\bigl(e_{s_1}\!\otimes\!e_{s_2}\!\otimes\!\delta_x\bigr)
+               =e_{s_1}\!\otimes\!\delta_{\langle s_2,x\rangle}.
+\]
+
+\bigskip
+\section*{6.\;\(\mathcal F(\mu_X)\) explicitly}
+\[
+\boxed{
+  \mathcal F(\mu_X)
+  \;=\;
+  \theta_X^{-1}\;\circ\;P_{S,X}\;\circ\;\theta_{T_S X}.
+}
+\]
+Thus \(\mathcal F(\mu_X)\) drops the first state coordinate.
+
+\bigskip
+\section*{7.\;Collapse Theorem}
+\begin{theorem}[State–Collapse]
+For every \(X\in\Set\),
+\[
+e_{S,X}\;=\;i_{S,X}\circ\mathcal F(\mu_X)
+\]
+is a split idempotent in \(\Vect\), i.e.\ \(e_{S,X}^2=e_{S,X}\).
+\end{theorem}
+
+\begin{proof}
+Using naturality and \(P\circ i=\id\):
+\[
+e_{S,X}^2
+=i\circ\mathcal F(\mu)\circ i\circ\mathcal F(\mu)
+=i\circ(P\circ i)\circ\mathcal F(\mu)
+=i\circ\mathcal F(\mu)
+=e_{S,X}.
+\]
+\end{proof}
+
+\bigskip
+\section*{8.\;Lean identifiers (reference)}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}ll@{}}
+\textbf{Symbol} & \textbf{Lean name} \\\hline
+$P_{S,X}$ & \verb|state_drop| \\
+$i_{S,X}$ & \verb|state_dup| \\
+$e_{S,X}$ & \verb|state_idem| \\
+$P\circ i=\id$ & \verb|collapse_split| \\
+$e^2=e$ & \verb|collapse_idem| \\
+Collapse Theorem & \verb|collapse_theorem|
+\end{tabular}
+\end{center}
+
+\end{document}
