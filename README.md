@@ -136,6 +136,7 @@ proves that this canonical description agrees with the basis description.
 | `MuEqPi/Linearization.lean` | `lin`; the functor `Lin S : Kl(T_S) ⥤ ModuleCat ℝ`; faithfulness; failure of fullness; `ℝ[X × S] ≅ ℝ[X] ⊗ ℝ[S]` |
 | `MuEqPi/Projection.lean` | `Flat`, `Sect σ`, `π_σ`; idempotence, properness, range, rank, trace, kernel dimension; the augmentation/tensor form |
 | `MuEqPi/Collapse.lean` | `outerNext`, `expand`; `μ ∘ t = expand t ∘ graph σ`; the main square `mu_eq_pi`; a worked `S = Bool` example |
+| `MuEqPi/Limitations.lean` | the boundary of the result, proved rather than asserted: the split idempotent holds for *every* lawful monad, and `π_σ` is a linearised set map |
 
 ---
 
@@ -161,7 +162,26 @@ import MuEqPi
 
 ## What is *not* claimed
 
-Being explicit about the boundary is part of the point.
+Being explicit about the boundary is part of the point. The two sharpest
+limitations are themselves theorems, in `MuEqPi/Limitations.lean`, so they can be
+checked rather than taken on trust.
+
+* **The split idempotent is not a fact about the state monad.** That `Tη ∘ μ` is
+  idempotent is a restatement of the monad law `μ ∘ Tη = id`, so it holds for
+  every lawful monad (`mcollapse_idem`), and `St.collapse` is literally an
+  instance of the generic construction (`St.collapse_eq_mcollapse`). Nothing
+  about `S → X × S` is used.
+
+* **The projection is not a fact about linear algebra.** `π_σ` is exactly the
+  linearisation of the idempotent *set map* `q ↦ (q.1, σ q.1)`
+  (`proj_eq_lin_setIdem`), whose idempotence holds by `rfl`
+  (`setIdem_comp_setIdem`). Its matrix is therefore a `0`–`1` matrix with one `1`
+  per column (`proj_single_basis`), its spectrum lies in `{0, 1}` for the trivial
+  reason, and `rank π_σ = tr π_σ = |X|·|S|` is a count of fixed points of a set
+  map (`fixedPoints_setIdem`). The vector space is bookkeeping. A monad whose
+  linearisation is *not* a `0`–`1` matrix — the distribution monad, whose Kleisli
+  arrows become stochastic matrices — is where a linear model would start to
+  carry content of its own.
 
 * **`μ` itself is not idempotent.** It cannot be: its source and target are
   different types. Only the composite `Tη ∘ μ` is, and only on `T²`.

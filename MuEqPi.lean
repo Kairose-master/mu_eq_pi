@@ -3,3 +3,4 @@ import MuEqPi.Kleisli
 import MuEqPi.Linearization
 import MuEqPi.Projection
 import MuEqPi.Collapse
+import MuEqPi.Limitations
