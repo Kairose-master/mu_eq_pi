@@ -1,18 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>μ = π Proof Archive</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>State–Collapse Theorem — proof archive</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body {
+        max-width: 46rem; margin: 0 auto; padding: 2rem 1.25rem 4rem;
+        font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+              "Helvetica Neue", Arial, sans-serif;
+      }
+      h1 { font-size: 1.6rem; margin-bottom: .25rem; }
+      h2 { font-size: 1.15rem; margin-top: 2.25rem; }
+      .sub { opacity: .7; margin-top: 0; }
+      ul { padding-left: 1.25rem; }
+      li { margin: .4rem 0; }
+      code { font-size: .9em; }
+      .note {
+        border-left: 3px solid currentColor; padding: .1rem 0 .1rem 1rem;
+        margin: 1.25rem 0; opacity: .95;
+      }
+      .stale { opacity: .65; }
+      table { border-collapse: collapse; width: 100%; margin-top: .75rem; }
+      th, td { text-align: left; padding: .4rem .6rem; border-bottom: 1px solid rgba(128,128,128,.35); vertical-align: top; }
+      th { font-weight: 600; }
+      footer { margin-top: 3rem; font-size: .9rem; opacity: .7; }
+    </style>
   </head>
   <body>
-    <h1>μ = π Proof</h1>
-    <ul>
-      <!-- 기존 v1 PDF -->
-      <li><a href="./pdf/mu_eq_pi.pdf">📄 Download PDF&nbsp;(v1)</a></li>
+    <h1>State–Collapse Theorem</h1>
+    <p class="sub">In what sense the state monad's multiplication is an idempotent projection.</p>
 
-      <!-- 새로 추가된 LaTeX appendix PDF (hot-fix) -->
-      <li><a href="./pdf/state-collapse.pdf">📄 Formal Appendix: State-Collapse Theorem&nbsp;(v1.1)
-      </a></li>
+    <div class="note">
+      <strong>Status.</strong> The result has been formalised in Lean&nbsp;4 and
+      corrected in the process. Version&nbsp;1.1 of the appendix contained a
+      substantive error — the reshuffle isomorphism <code>θ</code> of §5 does not
+      exist — which invalidated §6 as written. The theorem itself survives, in the
+      form given in v2.0 below. See the erratum for the full list.
+    </div>
+
+    <h2>Current</h2>
+    <ul>
+      <li>
+        <a href="https://github.com/Kairose-master/mu_eq_pi">Lean 4 formalisation</a>
+        — every statement machine-checked; no <code>sorry</code>, no axioms beyond
+        <code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code>.
+      </li>
+      <li>
+        <a href="./pdf/state-collapse.tex">Formal Appendix v2.0 (LaTeX source)</a>
+        — corrected text, with each statement labelled by its Lean name.
+      </li>
     </ul>
+
+    <div class="note">
+      The v2.0 PDF has not been rebuilt yet; the LaTeX source above is the
+      authoritative corrected text. The PDFs below are the <em>uncorrected</em>
+      earlier versions, kept for the record.
+    </div>
+
+    <h2 class="stale">Superseded</h2>
+    <ul class="stale">
+      <li><a href="./pdf/state-collapse.pdf">Formal Appendix v1.1 (PDF)</a> — contains the §5–§6 error.</li>
+      <li><a href="./pdf/mu_eq_pi.pdf">μ = π, v1 (PDF)</a> — earlier draft.</li>
+    </ul>
+
+    <h2>What is proved</h2>
+    <p>
+      Writing <code>T<sub>S</sub>X = S ⇒ (S × X)</code>, the monad law
+      <code>μ ∘ T<sub>S</sub>η = id</code> makes <code>μ</code> a split
+      epimorphism. Uncurrying identifies Kleisli arrows with functions between
+      configuration sets <code>C<sub>X</sub> = S × X</code>, which linearise. On
+      the doubled configuration set one gets a retraction <code>P</code> and,
+      for each transition function <code>σ</code>, a section
+      <code>i<sub>σ</sub></code> with <code>P ∘ i<sub>σ</sub> = id</code>. Hence
+      <code>e<sub>σ</sub> = i<sub>σ</sub> ∘ P</code> is an idempotent linear
+      operator — the projection onto the graph of <code>σ</code> — and
+      flattening any nested computation factors through it.
+    </p>
+
+    <h2>Erratum, v1.1 → v2.0</h2>
+    <table>
+      <tr><th>§</th><th>Correction</th></tr>
+      <tr><td>1</td><td>The formula for <code>μ</code> applied a pair to an argument; the second projection was missing.</td></tr>
+      <tr><td>3</td><td><code>F</code> was defined on functions <code>X → Y</code>; to be a functor on <code>Kl(T<sub>S</sub>)</code> it must be defined on Kleisli arrows.</td></tr>
+      <tr><td>4</td><td>The section was given only in the state-preserving case; the general theorem needs the family <code>i<sub>σ</sub></code>. Also, <code>P</code> is not an instance of a projection <code>V ⊗ W → W</code> — no such natural map exists — but of the augmentation of a free module.</td></tr>
+      <tr><td><strong>5</strong></td><td><strong>The reshuffle isomorphism does not exist.</strong> It indexed a basis of <code>ℝ<sup>T<sub>S</sub>X</sup></code> by <code>S × X</code>, but <code>T<sub>S</sub>X</code> is a function set. For <code>|S| = 2, |X| = 1</code> the two sides have dimension 8 and 4.</td></tr>
+      <tr><td>6</td><td>Consequently <code>F(μ) = θ⁻¹ ∘ P ∘ θ</code> was ill-typed. Replaced by a factorisation of <code>μ ∘ t</code> for each nested Kleisli arrow, avoiding any attempt to linearise the object <code>T<sub>S</sub>X</code>.</td></tr>
+      <tr><td>8</td><td>The Lean identifiers listed did not exist in the repository. Replaced by the actual names.</td></tr>
+    </table>
+
+    <h2>Scope</h2>
+    <p>
+      Two limits are themselves proved, in
+      <code>MuEqPi/Limitations.lean</code>. The split idempotent is not a fact
+      about the state monad — it holds for every lawful monad. And
+      <code>e<sub>σ</sub></code> is the linearisation of an idempotent map of
+      finite sets, so its rank and trace count fixed points; the vector space is
+      bookkeeping. A monad whose linearisation is not a 0–1 matrix — the
+      distribution monad — is where a linear model would start to carry content
+      of its own.
+    </p>
+
+    <footer>
+      Jinu Jang · <a href="https://github.com/Kairose-master/mu_eq_pi">github.com/Kairose-master/mu_eq_pi</a> · MIT
+    </footer>
   </body>
 </html>

@@ -8,33 +8,49 @@
 
 \title{Formal Appendix: State--Collapse Theorem}
 \author{Jinu Jang}
-\date{v1.1 -- June 27, 2025}
+\date{v2.0 --- corrected; every statement below is machine-checked in Lean~4}
 
 \theoremstyle{plain}
 \newtheorem{theorem}{Theorem}
 \newtheorem{lemma}{Lemma}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
 
 % shorthand
 \newcommand{\Set}{\mathbf{Set}}
 \newcommand{\Vect}{\mathbf{Vect}_{\mathbb R}}
 \newcommand{\id}{\operatorname{id}}
 \newcommand{\RR}{\mathbb R}
+\newcommand{\Kl}{\operatorname{Kl}}
 
 \begin{document}
 \maketitle
 
+\begin{abstract}
+This appendix states and proves the sense in which the multiplication of the
+state monad is an idempotent projection. Sections~0--4 and~7 are essentially
+unchanged from v1.1. Sections~5 and~6 are \emph{corrected}: the reshuffle
+isomorphism asserted there does not exist, and \S\ref{sec:noreshuffle} gives a
+counterexample. Section~9 is an erratum listing the changes, and \S10 records
+what the theorem does \emph{not} show. Lean names accompanying each statement
+refer to the formalisation at
+\url{https://github.com/Kairose-master/mu_eq_pi}.
+\end{abstract}
+
 \section*{0.\;Notation}
 \begin{itemize}
-  \item $\Set$ – category of sets and functions.
-  \item $\Vect$ – category of real vector spaces and linear maps.
-  \item $S$ – fixed non‐empty \emph{state set}.
-  \item $\RR^{X}$ – free vector space on $X$ with basis
+  \item $\Set$ -- category of sets and functions.
+  \item $\Vect$ -- category of real vector spaces and linear maps.
+  \item $S$ -- fixed non-empty \emph{state set}.
+  \item $\RR^{X}$ -- free vector space on $X$ with basis
         $\{\delta_x\}_{x\in X}$.
-  \item $\otimes$ – algebraic tensor product over $\RR$.
+  \item $\otimes$ -- algebraic tensor product over $\RR$.
+  \item $\RR^{f}$ -- the linear map $\delta_a\mapsto\delta_{f(a)}$ induced by a
+        function $f$.
 \end{itemize}
 
 \bigskip
-\section*{1.\;The state monad \(T_S\)}
+\section{The state monad \texorpdfstring{$T_S$}{T\_S}}
 \[
 T_S X \;:=\; S \Rightarrow (S\times X).
 \]
@@ -45,135 +61,341 @@ T_S X \;:=\; S \Rightarrow (S\times X).
 \]
 
 \paragraph{Multiplication.}
+For $\Phi\in T_ST_SX$, write $\Phi(s)=(s',\psi)$ with $s'\in S$ and
+$\psi\in T_SX$. Then
 \[
 \mu_X : T_S T_S X \longrightarrow T_S X,
 \qquad
-\mu_X(\Phi)(s) \;:=\; \Phi(s)\!\bigl(\pi_1\Phi(s)\bigr).
+\mu_X(\Phi)(s) \;:=\; \bigl(\pi_2\Phi(s)\bigr)\bigl(\pi_1\Phi(s)\bigr)
+\;=\;\psi(s').
 \]
 
-\paragraph{Monad‐algebra law.}
+\paragraph{Monad laws.}
 \[
-\mu_X \circ T_S\mu_X \;=\; \mu_X \circ \mu_{T_S X}.
-\tag*{(\*)}
+\mu_X \circ T_S\mu_X = \mu_X \circ \mu_{T_S X},
+\qquad
+\mu_X\circ\eta_{T_SX}=\id,
+\qquad
+\mu_X \circ T_S\eta_X \;=\; \id .
+\tag{$*$}
 \]
+\emph{Lean:} \verb|St.mu_assoc|, \verb|St.mu_eta|, \verb|St.mu_map_eta|.
 
-\bigskip
-\section*{2.\;Free \(T_S\)-algebras and \(\operatorname{Alg}_{T_S}\)}
-A \(T_S\)-algebra is a pair \((A,\alpha)\) with
-$\alpha:T_SA\to A$ obeying the usual axioms.
-The free algebra on a set $X$ is
-\[
-\bigl(T_S X,\;\mu_X\bigr),
-\]
-and \(\operatorname{Alg}_{T_S}\) has morphisms
-\(f:(A,\alpha)\to(B,\beta)\) satisfying
-\(\beta\circ T_S f = f\circ\alpha\).
-
-\bigskip
-\section*{3.\;The vector‐space functor \(\mathcal F\)}
-\[
-\boxed{
-  \mathcal F:\Set\longrightarrow\Vect,
-  \quad
-  \mathcal F(X)=\RR^{S}\otimes\RR^{X},
-  \quad
-  \mathcal F(f)=\id_{\RR^{S}}\otimes\RR^{f}.
-}
-\]
+\begin{remark}
+The right unit law in $(*)$ is the engine of everything below: it says $\mu_X$
+is a \emph{split epimorphism} with canonical section $T_S\eta_X$. Note that
+``$\mu\circ\mu=\mu$'' is not a statement one can make --- $\mu$ has different
+source and target --- whereas $T_S\eta\circ\mu$ is an endomorphism of $T_S^2$
+and is idempotent. \emph{Lean:} \verb|St.collapse_idem|.
+\end{remark}
 
 \bigskip
-\section*{4.\;Split idempotent pair \(P,i\)}
+\section{Free \texorpdfstring{$T_S$}{T\_S}-algebras}
+A $T_S$-algebra is a pair $(A,\alpha)$ with $\alpha:T_SA\to A$ obeying the usual
+axioms. The free algebra on a set $X$ is $\bigl(T_S X,\;\mu_X\bigr)$, and
+$\operatorname{Alg}_{T_S}$ has morphisms $f:(A,\alpha)\to(B,\beta)$ satisfying
+$\beta\circ T_S f = f\circ\alpha$.
+
+\bigskip
+\section{The vector-space functor \texorpdfstring{$\mathcal F$}{F}}
+\label{sec:functor}
+
+On objects, put
 \[
-\begin{aligned}
-P_{S,X}&:(\RR^{S}\otimes\RR^{S})\otimes\RR^{X}\to
-          \RR^{S}\otimes\RR^{X},
-&
-P(e_{s_1}\!\otimes\!e_{s_2}\!\otimes\!\delta_x)
-      &=e_{s_2}\!\otimes\!\delta_x,\\[6pt]
-i_{S,X}&:\RR^{S}\otimes\RR^{X}\to
-          (\RR^{S}\otimes\RR^{S})\otimes\RR^{X},
-&
-i(e_s\!\otimes\!\delta_x)
-      &=(e_s\!\otimes\!e_s)\!\otimes\!\delta_x.
-\end{aligned}
+\mathcal F(X)\;=\;\RR^{S}\otimes\RR^{X}\;\cong\;\RR^{\,S\times X}.
+\]
+The set $C_X:=S\times X$ is the set of \emph{configurations}: a state together
+with a value.
+
+On morphisms, $\mathcal F$ must be defined on \emph{Kleisli} arrows, not on
+functions $X\to Y$. Uncurrying gives a bijection
+\[
+\Kl(T_S)(X,Y)\;=\;\bigl(X\to S\Rightarrow(S\times Y)\bigr)
+\;\cong\;\bigl(C_X\to C_Y\bigr),
+\qquad
+k\;\longmapsto\;\widehat k,\quad \widehat k(s,x)=k(x)(s),
+\]
+and this bijection carries Kleisli composition to ordinary composition of
+functions. Setting
+\[
+\boxed{\;\mathcal F(k)\;:=\;\RR^{\widehat k}\;:\;\RR^{C_X}\to\RR^{C_Y}\;}
+\]
+therefore defines a functor $\mathcal F:\Kl(T_S)\to\Vect$.
+\emph{Lean:} \verb|threadEquiv|, \verb|uncur|, \verb|Lin|.
+
+\begin{lemma}
+$\mathcal F$ is faithful but not full. Distinct Kleisli arrows have distinct
+matrices; conversely the image of $\mathcal F$ consists of the $0$--$1$ matrices
+with exactly one $1$ in each column, so e.g.\ $2\cdot\id$ is not of the form
+$\mathcal F(k)$.
+\end{lemma}
+\emph{Lean:} \verb|instFaithfulLin|, \verb|two_smul_id_not_lin|.
+
+\begin{remark}
+$\Kl(T_S)$ is, by the displayed bijection, the co-Kleisli category of the
+comonad $-\times S$. Identifying the two is what makes a linear model possible:
+a Kleisli arrow $X\to S\Rightarrow(S\times Y)$ is higher-order and does not
+embed in a vector space, but $\widehat k$ is a function between plain sets, and
+functions between sets linearise.
+\end{remark}
+
+\bigskip
+\section{Split idempotent pair \texorpdfstring{$P,\,i_\sigma$}{P, i}}
+\label{sec:split}
+
+Let $D_X:=S\times C_X$ be the \emph{doubled configuration set}, so that
+\[
+\RR^{D_X}\;\cong\;(\RR^{S}\otimes\RR^{S})\otimes\RR^{X},
+\]
+with basis $e_{s_1}\otimes e_{s_2}\otimes\delta_x$. Here $s_1$ is the
+\emph{inner} slot --- the state at which a second stage is to be started, a free
+parameter before the two stages are joined --- and $s_2$ is the \emph{outer}
+slot, part of the incoming configuration.
+
+\paragraph{The projection.}
+\[
+P_{S,X}:(\RR^{S}\otimes\RR^{S})\otimes\RR^{X}\to \RR^{S}\otimes\RR^{X},
+\qquad
+P\bigl(e_{s_1}\otimes e_{s_2}\otimes\delta_x\bigr)=e_{s_2}\otimes\delta_x .
 \]
 
-\paragraph{Linearity.}
-Both maps extend $\RR$‐linearly from the basis.
+\paragraph{The section.}
+For a \emph{transition function} $\sigma:C_X\to S$ put
 \[
-P\circ i=\id_{\RR^{S}\otimes\RR^{X}},\qquad
-e_{S,X}:=i\circ P,\; e_{S,X}^2=e_{S,X}.
+i_\sigma:\RR^{S}\otimes\RR^{X}\to(\RR^{S}\otimes\RR^{S})\otimes\RR^{X},
+\qquad
+i_\sigma\bigl(e_s\otimes\delta_x\bigr)=e_{\sigma(s,x)}\otimes e_{s}\otimes\delta_x .
 \]
+Version~1.1 wrote only the special case $\sigma(s,x)=s$, giving the diagonal
+$i(e_s\otimes\delta_x)=(e_s\otimes e_s)\otimes\delta_x$; the general theorem
+needs the index $\sigma$.
+
+\begin{lemma}[Retraction]
+$P\circ i_\sigma=\id_{\RR^{S}\otimes\RR^{X}}$ for every $\sigma$, and hence
+\[
+e_\sigma:=i_\sigma\circ P
+\qquad\text{satisfies}\qquad
+e_\sigma^{\,2}=e_\sigma .
+\]
+On the basis, $e_\sigma\bigl(e_{s_1}\otimes e_{s_2}\otimes\delta_x\bigr)
+= e_{\sigma(s_2,x)}\otimes e_{s_2}\otimes\delta_x$: the free inner slot is
+overwritten by the value $\sigma$ prescribes. Thus $e_\sigma$ is the projection
+of the doubled state space onto the \emph{graph of $\sigma$}.
+\end{lemma}
+\emph{Lean:} \verb|Flat_comp_Sect|, \verb|proj_comp_proj|, \verb|proj_single|.
+
+\begin{lemma}[Properness]
+If $|S|\ge 2$ and $X\neq\emptyset$ then $e_\sigma\neq\id$. Moreover, for finite
+$S$ and $X$,
+\[
+\operatorname{rank}e_\sigma=\operatorname{tr}e_\sigma=|S|\,|X|,
+\qquad
+\dim\ker e_\sigma=|S|\,|X|\,(|S|-1),
+\]
+independently of $\sigma$.
+\end{lemma}
+\emph{Lean:} \verb|proj_ne_id|, \verb|finrank_range_proj|, \verb|trace_proj|,
+\verb|finrank_ker_proj|.
+
+\paragraph{Why $P$ is well defined.}
+$P$ is \emph{not} an instance of a projection $V\otimes W\to W$: no such natural
+map exists for general modules. What makes $P$ legitimate is that $\RR^{S}$ is
+\emph{free} on $S$, hence carries an augmentation
+\[
+\varepsilon:\RR^{S}\to\RR,\qquad \varepsilon(e_s)=1,
+\]
+and $P=\lambda\circ(\varepsilon\otimes\id\otimes\id)$ where $\lambda$ is the
+unitor $\RR\otimes V\cong V$. \emph{Lean:} \verb|aug|, \verb|Flat_eq_aug|.
 
 \paragraph{Naturality.}
-For every function \(f:X\to Y\),
-\[
-P_{S,Y}\circ(\id\otimes\RR^{f})
-=(\id\otimes\RR^{f})\circ P_{S,X},
-\quad i,\;e\text{ likewise}.
-\]
+For every function $f:X\to Y$, $P_{S,Y}\circ(\id\otimes\id\otimes\RR^{f})
+=(\id\otimes\RR^{f})\circ P_{S,X}$, and likewise for $i_\sigma$ and $e_\sigma$
+once $\sigma$ is transported along $f$.
 
 \bigskip
-\section*{5.\;Reshuffle isomorphism \(\theta\)}
+\section{\texorpdfstring{$\mathcal F(T_SX)$}{F(T\_S X)} admits no reshuffle}
+\label{sec:noreshuffle}
+
+Version~1.1 asserted an isomorphism
 \[
-\theta_X :
-\mathcal F(T_S X) \;\xrightarrow{\;\cong\;}
+\theta_X:\mathcal F(T_S X)\;\xrightarrow{\ \cong\ }\;
 (\RR^{S}\otimes\RR^{S})\otimes\RR^{X},
-\quad
-\theta_X\bigl(e_{s_1}\!\otimes\!\delta_{\langle s_2,x\rangle}\bigr)
-        =e_{s_1}\!\otimes\!e_{s_2}\!\otimes\!\delta_x.
+\qquad
+\theta_X\bigl(e_{s_1}\otimes\delta_{\langle s_2,x\rangle}\bigr)
+=e_{s_1}\otimes e_{s_2}\otimes\delta_x .
 \]
-Inverse:
+\textbf{This map does not exist.} The formula indexes basis vectors of
+$\RR^{T_SX}$ by pairs $\langle s_2,x\rangle\in S\times X$, i.e.\ it silently
+replaces $T_SX=S\Rightarrow(S\times X)$ by $S\times X$. These are different
+sets, and no isomorphism of the stated shape exists:
+
+\begin{theorem}[Counterexample]
+Let $|S|=2$ and $|X|=1$. Then $|T_SX|=|S\times X|^{|S|}=2^{2}=4$, so
 \[
-\theta_X^{-1}\bigl(e_{s_1}\!\otimes\!e_{s_2}\!\otimes\!\delta_x\bigr)
-               =e_{s_1}\!\otimes\!\delta_{\langle s_2,x\rangle}.
+\dim\mathcal F(T_SX)=|S|\cdot|T_SX|=2\cdot 4=8,
+\qquad
+\dim\bigl((\RR^{S}\otimes\RR^{S})\otimes\RR^{X}\bigr)=2\cdot 2\cdot 1=4 .
 \]
+Since $8\neq4$, no linear isomorphism $\theta_X$ exists.
+\end{theorem}
+
+In general $\dim\mathcal F(T_SX)=|S|\cdot(|S||X|)^{|S|}$, which grows
+exponentially in $|S|$, against $|S|^2|X|$ on the right.
+
+\paragraph{The correct route.}
+Do not apply $\mathcal F$ to the \emph{object} $T_SX$. The object assignment of
+\S\ref{sec:functor} is already correct; what must be taken on Kleisli arrows is
+the \emph{morphism} assignment. The doubled configuration set $D_X=S\times C_X$
+of \S\ref{sec:split} is a plain finite set, and it --- not $\mathcal F(T_SX)$
+--- is where $P$ and $i_\sigma$ live.
 
 \bigskip
-\section*{6.\;\(\mathcal F(\mu_X)\) explicitly}
-\[
-\boxed{
-  \mathcal F(\mu_X)
-  \;=\;
-  \theta_X^{-1}\;\circ\;P_{S,X}\;\circ\;\theta_{T_S X}.
-}
-\]
-Thus \(\mathcal F(\mu_X)\) drops the first state coordinate.
+\section{\texorpdfstring{$\mathcal F(\mu)$}{F(mu)} explicitly}
 
-\bigskip
-\section*{7.\;Collapse Theorem}
-\begin{theorem}[State–Collapse]
-For every \(X\in\Set\),
+Fix a nested Kleisli arrow $t:X\to T_ST_SY$. Writing
+$t(x)(s)=(s',\psi)$, define
 \[
-e_{S,X}\;=\;i_{S,X}\circ\mathcal F(\mu_X)
+\sigma_t:C_X\to S,\quad \sigma_t(s,x):=s'=\pi_1\bigl(t(x)(s)\bigr),
 \]
-is a split idempotent in \(\Vect\), i.e.\ \(e_{S,X}^2=e_{S,X}\).
+\[
+\widetilde t:D_X\to C_Y,\quad
+\widetilde t\bigl(s_1,(s,x)\bigr):=\psi(s_1)=\bigl(\pi_2 (t(x)(s))\bigr)(s_1),
+\]
+and $\gamma_\sigma:C_X\to D_X$, $\gamma_\sigma(p):=(\sigma(p),p)$, so that
+$i_\sigma=\RR^{\gamma_\sigma}$ and $P=\RR^{\pi_2}$.
+
+\begin{theorem}[Flattening is substitution]
+\label{thm:subst}
+\[
+\boxed{\;\widehat{\mu\circ t}\;=\;\widetilde t\circ\gamma_{\sigma_t}\;}
+\qquad\text{hence}\qquad
+\mathcal F(\mu\circ t)\;=\;\RR^{\widetilde t}\circ i_{\sigma_t}.
+\]
 \end{theorem}
 
 \begin{proof}
-Using naturality and \(P\circ i=\id\):
-\[
-e_{S,X}^2
-=i\circ\mathcal F(\mu)\circ i\circ\mathcal F(\mu)
-=i\circ(P\circ i)\circ\mathcal F(\mu)
-=i\circ\mathcal F(\mu)
-=e_{S,X}.
-\]
+Both sides at $(s,x)$: the left is $\mu(t(x))(s)=\psi(s')$ by \S1, and the
+right is $\widetilde t(\sigma_t(s,x),(s,x))=\widetilde t(s',(s,x))=\psi(s')$.
+Apply $\RR^{(-)}$, which is functorial.
 \end{proof}
 
+Thus flattening is exactly \emph{substitution of the transition function into
+the free inner slot}. \emph{Lean:} \verb|threadEquiv_mu|, \verb|lin_mu|.
+
 \bigskip
-\section*{8.\;Lean identifiers (reference)}
+\section{Collapse Theorem}
+
+\begin{theorem}[State--Collapse]
+For every $\sigma:C_X\to S$ the operator $e_\sigma=i_\sigma\circ P$ is a split
+idempotent in $\Vect$, and for every nested Kleisli arrow $t:X\to T_ST_SY$ the
+square
+\[
+\boxed{\;\RR^{\widetilde t}\circ e_{\sigma_t}
+\;=\;\mathcal F(\mu\circ t)\circ P\;}
+\]
+commutes: projecting the doubled state space onto the graph of $\sigma_t$ and
+then running is the same as flattening and then running.
+\end{theorem}
+
+\begin{proof}
+Idempotence: $e_\sigma^{2}=i_\sigma\circ(P\circ i_\sigma)\circ P
+=i_\sigma\circ P=e_\sigma$ by the Retraction Lemma. For the square,
+\[
+\RR^{\widetilde t}\circ e_{\sigma_t}
+=\RR^{\widetilde t}\circ i_{\sigma_t}\circ P
+=\mathcal F(\mu\circ t)\circ P
+\]
+by Theorem~\ref{thm:subst}.
+\end{proof}
+\emph{Lean:} \verb|mu_eq_pi|.
+
+\bigskip
+\section{Lean identifiers}
+
+The formalisation orders configurations as $X\times S$ rather than $S\times X$
+and places the free slot second, so $P$ appears as $\RR^{\pi_1}$ there.
+
 \begin{center}
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{@{}ll@{}}
-\textbf{Symbol} & \textbf{Lean name} \\\hline
-$P_{S,X}$ & \verb|state_drop| \\
-$i_{S,X}$ & \verb|state_dup| \\
-$e_{S,X}$ & \verb|state_idem| \\
-$P\circ i=\id$ & \verb|collapse_split| \\
-$e^2=e$ & \verb|collapse_idem| \\
-Collapse Theorem & \verb|collapse_theorem|
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\textbf{Symbol} & \textbf{Lean name} & \textbf{File}\\\hline
+$\mu_X$ & \verb|St.mu| & \verb|StateMonad.lean|\\
+$\mu\circ T_S\eta=\id$ & \verb|St.mu_map_eta| & \verb|StateMonad.lean|\\
+$T_S\eta\circ\mu$ idempotent & \verb|St.collapse_idem| & \verb|StateMonad.lean|\\
+$\widehat{(-)}$ & \verb|threadEquiv| & \verb|Kleisli.lean|\\
+$\mathcal F$ & \verb|Lin| & \verb|Linearization.lean|\\
+faithful, not full & \verb|instFaithfulLin|, \verb|two_smul_id_not_lin| & \verb|Linearization.lean|\\
+$P_{S,X}$ & \verb|Flat| & \verb|Projection.lean|\\
+$i_\sigma$ & \verb|Sect| & \verb|Projection.lean|\\
+$e_\sigma$ & \verb|proj| & \verb|Projection.lean|\\
+$P\circ i_\sigma=\id$ & \verb|Flat_comp_Sect| & \verb|Projection.lean|\\
+$e_\sigma^2=e_\sigma$ & \verb|proj_comp_proj| & \verb|Projection.lean|\\
+$e_\sigma\neq\id$ & \verb|proj_ne_id| & \verb|Projection.lean|\\
+$P=\lambda\circ(\varepsilon\otimes\id)$ & \verb|Flat_eq_aug| & \verb|Projection.lean|\\
+rank, trace, kernel & \verb|finrank_range_proj|, \verb|trace_proj| & \verb|Projection.lean|\\
+$\sigma_t$, $\widetilde t$ & \verb|outerNext|, \verb|expand| & \verb|Collapse.lean|\\
+Theorem~\ref{thm:subst} & \verb|threadEquiv_mu|, \verb|lin_mu| & \verb|Collapse.lean|\\
+Collapse Theorem & \verb|mu_eq_pi| & \verb|Collapse.lean|\\
 \end{tabular}
 \end{center}
+
+Every entry compiles against Lean~4 (\verb|v4.32.1|) and \verb|mathlib|, with no
+\verb|sorry| and no axioms beyond \verb|propext|, \verb|Classical.choice| and
+\verb|Quot.sound|.
+
+\bigskip
+\section{Erratum: changes from v1.1}
+
+\begin{enumerate}
+  \item \S1, multiplication: the formula read
+        $\mu_X(\Phi)(s)=\Phi(s)(\pi_1\Phi(s))$, applying a \emph{pair} to an
+        argument. Corrected to
+        $\mu_X(\Phi)(s)=(\pi_2\Phi(s))(\pi_1\Phi(s))$.
+  \item \S3: $\mathcal F$ was given only on functions $X\to Y$. To be a functor
+        on $\Kl(T_S)$ it must be defined on Kleisli arrows, via uncurrying.
+  \item \S4: the section was stated only in the state-preserving case. The
+        general statement requires the family $i_\sigma$ indexed by a transition
+        function. The justification of $P$ via the augmentation of a free module
+        has been added, since $P$ is \emph{not} an instance of a nonexistent
+        projection $V\otimes W\to W$.
+  \item \S5: the reshuffle isomorphism $\theta_X$ does not exist; see the
+        counterexample in \S\ref{sec:noreshuffle}. This was the substantive
+        error of v1.1.
+  \item \S6: consequently $\mathcal F(\mu_X)=\theta^{-1}\circ P\circ\theta$ was
+        ill-typed. Replaced by Theorem~\ref{thm:subst}, which factors
+        $\mu\circ t$ for each nested Kleisli arrow $t$ rather than trying to
+        linearise the object $T_SX$.
+  \item \S8: the Lean identifiers listed
+        (\verb|state_drop|, \verb|state_dup|, \verb|state_idem|,
+        \verb|collapse_split|, \verb|collapse_idem|, \verb|collapse_theorem|)
+        did not exist in the repository. Replaced by the actual names.
+\end{enumerate}
+
+\bigskip
+\section{What the theorem does not show}
+
+\begin{enumerate}
+  \item \textbf{Not specific to the state monad.} That $T\eta\circ\mu$ is
+        idempotent is a restatement of the right unit law and holds for
+        \emph{every} lawful monad. \emph{Lean:} \verb|mcollapse_idem|,
+        \verb|St.collapse_eq_mcollapse|.
+  \item \textbf{Not specific to linear algebra.} $e_\sigma$ is exactly the
+        linearisation of the idempotent \emph{set map}
+        $(s_1,p)\mapsto(\sigma(p),p)$, whose idempotence is immediate. Its
+        matrix is a $0$--$1$ matrix with one $1$ per column, its spectrum lies
+        in $\{0,1\}$ for the trivial reason, and $\operatorname{rank}=
+        \operatorname{tr}=|S||X|$ is a count of fixed points of that set map.
+        The vector space is bookkeeping. \emph{Lean:}
+        \verb|proj_eq_lin_setIdem|, \verb|fixedPoints_setIdem|.
+  \item \textbf{The projection depends on the computation.} There is no single
+        $e$ doing the work of $\mu$ for all nested arrows at once; only the rank
+        and trace are independent of $\sigma$.
+  \item \textbf{No claim is made} about language models, ``tensor collapse'', or
+        any domain-specific language.
+\end{enumerate}
+
+A monad whose linearisation is \emph{not} a $0$--$1$ matrix --- the distribution
+monad, whose Kleisli arrows become stochastic matrices --- is where a linear
+model would begin to carry content of its own.
 
 \end{document}
