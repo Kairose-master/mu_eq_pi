@@ -1,24 +1,34 @@
-# Flattening the State Monad: a linear-algebraic model
+# Monad flattening, in three languages
 
-A Lean 4 / mathlib formalisation of the sense in which the state monad's
-multiplication `μ` is an **idempotent projection**.
+Why does joining two stateful computations give back a single computation?
+Automata theory (Mealy 1955), category theory (Kleisli 1965, Moggi 1991) and
+linear algebra each answer in their own words — and the three answers are
+literally the same object: **a projection**. This repository is a Lean 4 /
+mathlib formalisation of that fact, written to be learned from.
 
-> **📖 Interactive learning note (KO / EN):**
+> **📖 Learning note with interactive widgets (KO / EN):**
 > **<https://kairose-master.github.io/mu_eq_pi/>**
 
-**This repository claims no novelty.** Every ingredient below is textbook, and
-§ *Provenance* names the paper and the year for each one. What it does claim is
-narrower and checkable: everything is **machine-checked**, and the
-**limitations are proved too**. There are no `sorry`s and no custom axioms —
-every theorem depends only on Lean's three standard axioms (`propext`,
-`Classical.choice`, `Quot.sound`).
+**What you will find here**
+
+- the category of Mealy machines, and its identification with the Kleisli
+  category of the state monad
+- the linearisation functor into `ModuleCat ℝ`, proved faithful and proved
+  not full
+- the flattening projection `π_σ`: idempotence, rank, trace, kernel
+- the main theorem `mu_eq_pi`, and — as theorems rather than remarks — what
+  it does *not* depend on
+
+Everything is machine-checked: no `sorry`, no custom axioms (`propext`,
+`Classical.choice`, `Quot.sound` only). Pinned to Lean 4 `v4.32.1` and the
+matching mathlib tag.
 
 ---
 
-## Provenance
+## Where each step comes from
 
-The result is about seventy years old. Each step below rests on a specific,
-named piece of the literature.
+The result is about seventy years old. Each step rests on a specific, named
+piece of the literature.
 
 | Year | Who | What it gives us |
 |---|---|---|
@@ -236,6 +246,13 @@ checked rather than taken on trust.
 
 ---
 
+## About this repository
+
+No new mathematics is claimed here; the table at the top is the source of
+every ingredient. What is claimed is that the whole route is machine-checked,
+and that its limits (`MuEqPi/Limitations.lean`) are proved rather than
+asserted. Corrections to earlier versions are listed below.
+
 ## Errata relative to the earlier version of this repository
 
 The previous `src/` tree did not compile, and several statements in it were not
@@ -286,7 +303,7 @@ quietly deleting them.
 ```bibtex
 @misc{flatten-state-monad,
   author = {Jinu Jang},
-  title  = {Flattening the State Monad: a linear-algebraic model},
+  title  = {Monad flattening, in three languages: a Lean 4 formalisation},
   year   = {2025},
   note   = {Lean 4 formalisation, GitHub repository}
 }
