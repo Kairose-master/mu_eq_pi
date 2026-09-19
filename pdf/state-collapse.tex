@@ -132,8 +132,13 @@ $\mathcal F(k)$.
 \emph{Lean:} \verb|instFaithfulLin|, \verb|two_smul_id_not_lin|.
 
 \begin{remark}
-$\Kl(T_S)$ is, by the displayed bijection, the co-Kleisli category of the
-comonad $-\times S$. Identifying the two is what makes a linear model possible:
+The displayed bijection is the standard one for the Kleisli category of a monad
+$GF$ arising from an adjunction $F\dashv G$, here $(-\times S)\dashv(S\Rightarrow-)$,
+under which $\Kl(GF)(X,Y)\cong\Set(FX,FY)$. So $\Kl(T_S)$ is the \emph{full image}
+of the functor $-\times S$. It is \emph{not} the co-Kleisli category of the comonad
+$-\times S$, whose hom-sets are $\Set(X\times S,Y)$: for $X=Y=S$ of size $2$ those
+number $2^{4}=16$, against $4^{4}=256$ here. Identifying $\Kl(T_S)$ with the full
+image is what makes a linear model possible:
 a Kleisli arrow $X\to S\Rightarrow(S\times Y)$ is higher-order and does not
 embed in a vector space, but $\widehat k$ is a function between plain sets, and
 functions between sets linearise.
@@ -365,6 +370,10 @@ Every entry compiles against Lean~4 (\verb|v4.32.1|) and \verb|mathlib|, with no
         ill-typed. Replaced by Theorem~\ref{thm:subst}, which factors
         $\mu\circ t$ for each nested Kleisli arrow $t$ rather than trying to
         linearise the object $T_SX$.
+  \item \S3, remark: v2.0 initially glossed $\Kl(T_S)$ as the co-Kleisli category
+        of the comonad $-\times S$. That is wrong --- co-Kleisli hom-sets are
+        $\Set(X\times S,Y)$, not $\Set(X\times S,Y\times S)$. Corrected to the full
+        image of $-\times S$.
   \item \S8: the Lean identifiers listed
         (\verb|state_drop|, \verb|state_dup|, \verb|state_idem|,
         \verb|collapse_split|, \verb|collapse_idem|, \verb|collapse_theorem|)

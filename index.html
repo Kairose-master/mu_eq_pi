@@ -83,7 +83,7 @@
     <table>
       <tr><th>§</th><th>Correction</th></tr>
       <tr><td>1</td><td>The formula for <code>μ</code> applied a pair to an argument; the second projection was missing.</td></tr>
-      <tr><td>3</td><td><code>F</code> was defined on functions <code>X → Y</code>; to be a functor on <code>Kl(T<sub>S</sub>)</code> it must be defined on Kleisli arrows.</td></tr>
+      <tr><td>3</td><td><code>F</code> was defined on functions <code>X → Y</code>; to be a functor on <code>Kl(T<sub>S</sub>)</code> it must be defined on Kleisli arrows. <em>(v2.0a)</em> A remark glossing <code>Kl(T<sub>S</sub>)</code> as the co-Kleisli category of <code>− × S</code> was also wrong: co-Kleisli hom-sets are <code>X × S → Y</code>, not <code>X × S → Y × S</code> — 16 against 256 when <code>|X| = |Y| = |S| = 2</code>. It is the full image of <code>− × S</code>.</td></tr>
       <tr><td>4</td><td>The section was given only in the state-preserving case; the general theorem needs the family <code>i<sub>σ</sub></code>. Also, <code>P</code> is not an instance of a projection <code>V ⊗ W → W</code> — no such natural map exists — but of the augmentation of a free module.</td></tr>
       <tr><td><strong>5</strong></td><td><strong>The reshuffle isomorphism does not exist.</strong> It indexed a basis of <code>ℝ<sup>T<sub>S</sub>X</sup></code> by <code>S × X</code>, but <code>T<sub>S</sub>X</code> is a function set. For <code>|S| = 2, |X| = 1</code> the two sides have dimension 8 and 4.</td></tr>
       <tr><td>6</td><td>Consequently <code>F(μ) = θ⁻¹ ∘ P ∘ θ</code> was ill-typed. Replaced by a factorisation of <code>μ ∘ t</code> for each nested Kleisli arrow, avoiding any attempt to linearise the object <code>T<sub>S</sub>X</code>.</td></tr>
