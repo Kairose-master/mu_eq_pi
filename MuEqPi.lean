@@ -4,3 +4,4 @@ import MuEqPi.Linearization
 import MuEqPi.Projection
 import MuEqPi.Collapse
 import MuEqPi.Limitations
+import MuEqPi.Frontier

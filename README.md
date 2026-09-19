@@ -18,6 +18,17 @@ mathlib formalisation of that fact, written to be learned from.
 - the flattening projection `π_σ`: idempotence, rank, trace, kernel
 - the main theorem `mu_eq_pi`, and — as theorems rather than remarks — what
   it does *not* depend on
+- one step past Part I: the state monad's `μ` is a split epimorphism but
+  **not weakly cartesian** (`MuEqPi/Frontier.lean`), the property Bohinen &
+  Perrone (2026) establish for the Giry monad — so weak cartesianness is a
+  genuinely probabilistic phenomenon
+
+The learning note has a **Part II** with eight current research questions in
+this lineage — idempotent splitting in Markov categories, sober objects, the
+synthetic proofs of classical limit theorems, Fritz–Rischel's Problem 6.7 and
+its 2025 solution, effectful Mealy machines, entropy as distance from
+determinism, and what remains unformalised — each with verified citations and
+graded challenges.
 
 Everything is machine-checked: no `sorry`, no custom axioms (`propext`,
 `Classical.choice`, `Quot.sound` only). Pinned to Lean 4 `v4.32.1` and the
@@ -181,6 +192,7 @@ proves that this canonical description agrees with the basis description.
 | `MuEqPi/Projection.lean` | `Flat`, `Sect σ`, `π_σ`; idempotence, properness, range, rank, trace, kernel dimension; the augmentation/tensor form |
 | `MuEqPi/Collapse.lean` | `outerNext`, `expand`; `μ ∘ t = expand t ∘ graph σ`; the main square `mu_eq_pi`; a worked `S = Bool` example |
 | `MuEqPi/Limitations.lean` | the boundary of the result, proved rather than asserted: the split idempotent holds for *every* lawful monad, and `π_σ` is a linearised set map |
+| `MuEqPi/Frontier.lean` | `MuWeaklyCartesian`; `not_muWeaklyCartesian_bool` — the state monad's `μ` is not weakly cartesian, contrasting with the Giry monad (Bohinen–Perrone 2026) |
 
 ---
 
