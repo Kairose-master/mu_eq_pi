@@ -20,7 +20,10 @@ in a finite-dimensional vector space. After uncurrying it is a function between
 the *plain sets* `X × S` and `Y × S`, and functions between sets linearise: this
 is the free-vector-space functor, used in `MuEqPi.Linearization`.
 
-Concretely, `Kl(T_S)` is the co-Kleisli category of the comonad `- × S`.
+Concretely, `Kl(T_S)` is the full image of the functor `- × S`. This is the
+standard identification of the Kleisli category of a monad `G ∘ F` coming from an
+adjunction `F ⊣ G` — here `(- × S) ⊣ (S ⇒ -)` — under which
+`Set(X, S ⇒ (Y × S)) ≅ Set(X × S, Y × S)`.
 
 ## Main results
 
@@ -46,7 +49,9 @@ abbrev Kl (S : Type u) := KleisliCat (St S)
 /-- The **state-threading category** `𝒮_S`: objects are types, and a morphism
 `X ⟶ Y` is a plain function `X × S → Y × S`, composed as functions.
 
-This is the co-Kleisli category of the product comonad `- × S`. -/
+This is the full image of the functor `- × S`. It is *not* the co-Kleisli
+category of the comonad `- × S`, whose hom-sets are `X × S → Y`: already for
+`X = Y = S = Bool` those number `2 ^ 4 = 16` against `4 ^ 4 = 256` here. -/
 def ThreadCat (_S : Type u) := Type u
 
 namespace ThreadCat

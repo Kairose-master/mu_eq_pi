@@ -42,7 +42,10 @@ Kl(T_S)  ≅  𝒮_S ,   where 𝒮_S(X, Y) = (X × S → Y × S)
 
 identity on objects, bijective on hom-sets, carrying Kleisli composition to
 ordinary composition of functions (`uncur`, `instIsEquivalenceUncur`). `𝒮_S` is
-the co-Kleisli category of the comonad `- × S`. This step is what makes a linear
+the full image of the functor `- × S : Set → Set`: the identification is the
+standard one for the Kleisli category of a monad `G ∘ F` arising from an
+adjunction `F ⊣ G`, here `(- × S) ⊣ (S ⇒ -)`, under which
+`Set(X, S ⇒ (Y × S)) ≅ Set(X × S, Y × S)`. This step is what makes a linear
 model possible at all: a Kleisli arrow `X → S → Y × S` is higher-order and does
 not embed in a vector space, but after uncurrying it is a function between the
 sets `X × S` and `Y × S`, and functions between sets linearise.
