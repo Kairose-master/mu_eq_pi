@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>μ = π — 계보를 따라가는 학습 노트</title>
-<meta name="description" content="상태 모나드의 평탄화가 멱등 사영이라는 70년 된 사실을, Mealy 1955부터 Lean 4 증명까지 계보를 따라가며 배우는 노트.">
+<title>모나드 평탄화, 세 가지 언어로</title>
+<meta name="description" content="상태를 가진 계산을 두 번 이어 붙이면 왜 한 번과 같아지는가 — 오토마타, 범주론, 선형대수가 같은 답을 하는 과정을 따라가는 입문 노트. 모든 정리는 Lean 4로 검증.">
 <style>
   :root{
     color-scheme: light dark;
@@ -25,89 +25,84 @@
     --ok:#8fc08f; --bad:#e0897c;
   }
   *{box-sizing:border-box}
-  body{
-    margin:0; background:var(--bg); color:var(--fg);
+  body{margin:0;background:var(--bg);color:var(--fg);
     font:16px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Roboto,sans-serif;
-    -webkit-text-size-adjust:100%;
-  }
+    -webkit-text-size-adjust:100%}
   .wrap{max-width:52rem;margin:0 auto;padding:0 16px 6rem}
-  header.top{
-    position:sticky;top:0;z-index:20;background:var(--bg);background:color-mix(in srgb,var(--bg) 88%,transparent);
-    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
-  }
+  header.top{position:sticky;top:0;z-index:20;background:var(--bg);
+    background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
   .topin{max-width:52rem;margin:0 auto;padding:.6rem 16px;display:flex;gap:.75rem;align-items:center}
-  .brand{font-weight:600;letter-spacing:.01em;margin-right:auto;font-size:.95rem}
-  .brand span{color:var(--accent)}
-  button.ctl{
-    font:inherit;font-size:.82rem;padding:.3rem .6rem;border-radius:999px;cursor:pointer;
-    background:transparent;color:var(--muted);border:1px solid var(--line);
-  }
+  .brand{font-weight:600;margin-right:auto;font-size:.95rem} .brand span{color:var(--accent)}
+  button.ctl{font:inherit;font-size:.82rem;padding:.3rem .6rem;border-radius:999px;cursor:pointer;
+    background:transparent;color:var(--muted);border:1px solid var(--line)}
   button.ctl:hover{color:var(--fg);border-color:var(--accent)}
   button.ctl[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
-  h1{font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.2;margin:2.5rem 0 .5rem;letter-spacing:-.02em}
-  h2{font-size:1.3rem;margin:3.5rem 0 .25rem;letter-spacing:-.01em;scroll-margin-top:4rem}
+  h1{font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.2;margin:2.5rem 0 .3rem;letter-spacing:-.02em}
+  .tagline{font-size:1.05rem;color:var(--muted);margin:0 0 1.2rem}
+  h2{font-size:1.35rem;margin:3.6rem 0 .3rem;letter-spacing:-.01em;scroll-margin-top:4rem}
   h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:.5rem;font-weight:600}
-  h3{font-size:1.02rem;margin:2rem 0 .3rem}
+  h2 .era{display:block;font-size:.8rem;font-weight:500;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-top:.15rem}
+  h3{font-size:1.02rem;margin:1.9rem 0 .3rem}
   p{margin:.8rem 0}
   a{color:var(--accent);text-underline-offset:2px}
-  .lede{font-size:1.08rem;color:var(--muted)}
-  .sub{color:var(--muted);font-size:.92rem;margin-top:-.2rem}
-  code,kbd{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);
-    padding:.1em .35em;border-radius:4px;word-break:break-word}
+  .lede{font-size:1.06rem}
+  .sub{color:var(--muted);font-size:.92rem}
+  code,kbd{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);padding:.1em .35em;border-radius:4px;word-break:break-word}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;margin:1.2rem 0}
-  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);
-    border-radius:0 8px 8px 0;padding:.8rem 1rem;margin:1.2rem 0}
+  .card h4{margin:0 0 .4rem;font-size:.95rem}
+  .card ul{margin:.3rem 0;padding-left:1.2rem} .card li{margin:.2rem 0}
+  .callout{border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 8px 8px 0;padding:.8rem 1rem;margin:1.2rem 0}
   .callout.warn{border-left-color:var(--bad);background:color-mix(in srgb,var(--bad) 8%,transparent)}
+  .callout p{margin:.25rem 0}
   .eq{font-family:var(--mono);font-size:.92rem;background:var(--card);border:1px solid var(--line);
     border-radius:8px;padding:.7rem .9rem;margin:.9rem 0;overflow-x:auto;white-space:pre}
-  .lean{font-family:var(--mono);font-size:.8rem;color:var(--muted);margin-top:.35rem;display:block}
+  .lean{font-family:var(--mono);font-size:.78rem;color:var(--muted);margin:.35rem 0 .2rem;display:block}
   .lean b{color:var(--accent);font-weight:600}
+  .def{margin:1rem 0;padding:.7rem 1rem;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+  .def .t{font-weight:600;font-size:.86rem;color:var(--accent);letter-spacing:.03em;text-transform:uppercase}
+  /* exercises */
+  details.ex{margin:.8rem 0;border:1px solid var(--line);border-radius:10px;background:var(--card);padding:.55rem .9rem}
+  details.ex summary{cursor:pointer;font-weight:600;font-size:.93rem;list-style:none;display:flex;gap:.6rem;align-items:baseline}
+  details.ex summary::-webkit-details-marker{display:none}
+  details.ex summary .tag{font-size:.74rem;font-weight:600;color:var(--accent);letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+  details.ex summary::after{content:"+";margin-left:auto;color:var(--muted);font-weight:400}
+  details.ex[open] summary::after{content:"−"}
+  details.ex .ans{margin-top:.6rem;padding-top:.6rem;border-top:1px dashed var(--line);font-size:.92rem;color:var(--fg)}
+  details.ex .ans .k{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
   /* timeline */
   ol.tl{list-style:none;padding:0;margin:1.5rem 0;position:relative}
   ol.tl::before{content:"";position:absolute;left:3.9rem;top:.4rem;bottom:.4rem;width:1px;background:var(--line)}
-  ol.tl li{position:relative;padding:0 0 1.35rem 5.6rem;min-height:1.8rem}
-  ol.tl .yr{position:absolute;left:0;top:0;width:3.2rem;text-align:right;
-    font-variant-numeric:tabular-nums;font-weight:600;font-size:.86rem;color:var(--accent)}
-  ol.tl .dot{position:absolute;left:3.55rem;top:.55rem;width:9px;height:9px;border-radius:50%;
-    background:var(--bg);border:2px solid var(--accent)}
+  ol.tl li{position:relative;padding:0 0 1.2rem 5.6rem;min-height:1.8rem}
+  ol.tl .yr{position:absolute;left:0;top:0;width:3.2rem;text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-size:.86rem;color:var(--accent)}
+  ol.tl .dot{position:absolute;left:3.55rem;top:.55rem;width:9px;height:9px;border-radius:50%;background:var(--bg);border:2px solid var(--accent)}
   ol.tl li.key .dot{background:var(--accent)}
-  ol.tl .what{font-weight:600;font-size:.96rem}
-  ol.tl .why{color:var(--muted);font-size:.88rem}
-  /* table */
-  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
-  th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
-  th{font-weight:600;color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+  ol.tl .what{font-weight:600;font-size:.95rem} ol.tl .why{color:var(--muted);font-size:.87rem}
   /* widgets */
   .w{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;margin:1.3rem 0}
-  .w h4{margin:0 0 .15rem;font-size:.98rem}
-  .w .hint{color:var(--muted);font-size:.85rem;margin:0 0 .9rem}
+  .w h4{margin:0 0 .15rem;font-size:.98rem} .w .hint{color:var(--muted);font-size:.85rem;margin:0 0 .9rem}
   .row{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;margin:.55rem 0}
   .row .lbl{font-size:.83rem;color:var(--muted);min-width:5.2rem}
   .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-  .seg button{font:inherit;font-family:var(--mono);font-size:.82rem;padding:.25rem .65rem;border:0;
-    background:transparent;color:var(--muted);cursor:pointer}
+  .seg button{font:inherit;font-family:var(--mono);font-size:.82rem;padding:.25rem .65rem;border:0;background:transparent;color:var(--muted);cursor:pointer}
   .seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:600}
-  .out{font-family:var(--mono);font-size:.85rem;margin-top:.9rem;padding:.75rem .85rem;
-    background:var(--accent-soft);border-radius:8px;line-height:1.85;overflow-x:auto;
-    white-space:pre-wrap;word-break:break-word}
-  .out .k{color:var(--muted)}
-  .hl{color:var(--accent);font-weight:600}
-  .gone{color:var(--bad);text-decoration:line-through}
-  .keep{color:var(--ok);font-weight:600}
+  .out{font-family:var(--mono);font-size:.85rem;margin-top:.9rem;padding:.75rem .85rem;background:var(--accent-soft);
+    border-radius:8px;line-height:1.85;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+  .out .k{color:var(--muted)} .hl{color:var(--accent);font-weight:600}
+  .gone{color:var(--bad);text-decoration:line-through} .keep{color:var(--ok);font-weight:600}
   .grid-m{display:grid;gap:2px;margin:.7rem 0;overflow-x:auto;padding-bottom:.3rem}
-  .cell{width:26px;height:26px;display:grid;place-items:center;border-radius:4px;
-    font-family:var(--mono);font-size:.72rem;background:color-mix(in srgb,var(--fg) 5%,transparent);color:var(--muted)}
+  .cell{width:26px;height:26px;display:grid;place-items:center;border-radius:4px;font-family:var(--mono);font-size:.72rem;
+    background:color-mix(in srgb,var(--fg) 5%,transparent);color:var(--muted)}
   .cell.one{background:var(--accent);color:var(--bg);font-weight:700}
   .cell.one.fix{outline:2px solid var(--ok);outline-offset:-2px}
-  .stat{display:flex;gap:1.3rem;flex-wrap:wrap;margin-top:.7rem;font-size:.86rem}
-  .stat div{font-family:var(--mono)}
-  .stat b{color:var(--accent)}
+  .stat{display:flex;gap:1.3rem;flex-wrap:wrap;margin-top:.7rem;font-size:.86rem} .stat div{font-family:var(--mono)} .stat b{color:var(--accent)}
   input[type=range]{accent-color:var(--accent);flex:1;min-width:8rem;max-width:14rem}
-  footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--line);
-    color:var(--muted);font-size:.86rem}
+  table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.9rem;display:block;overflow-x:auto}
+  th,td{text-align:left;padding:.5rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-weight:600;color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+  footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}
   ul.src{padding-left:1.1rem} ul.src li{margin:.3rem 0;font-size:.86rem}
-  .en,.ko{display:none}
-  html[lang="ko"] .ko{display:revert} html[lang="en"] .en{display:revert}
+  .en,.ko{display:none} html[lang="ko"] .ko{display:revert} html[lang="en"] .en{display:revert}
   @media (max-width:520px){
     ol.tl::before{left:.4rem} ol.tl li{padding-left:1.8rem}
     ol.tl .yr{position:static;width:auto;text-align:left;display:block;margin-bottom:.1rem}
@@ -117,497 +112,489 @@
 </head>
 <body>
 
-<header class="top">
-  <div class="topin">
-    <div class="brand">μ = <span>π</span></div>
-    <button class="ctl" id="langko" aria-pressed="true" onclick="setLang('ko')">한국어</button>
-    <button class="ctl" id="langen" aria-pressed="false" onclick="setLang('en')">EN</button>
-    <button class="ctl" id="theme" onclick="toggleTheme()" title="theme">◐</button>
-  </div>
-</header>
+<header class="top"><div class="topin">
+  <div class="brand">μ = <span>π</span></div>
+  <button class="ctl" id="langko" aria-pressed="true" onclick="setLang('ko')">한국어</button>
+  <button class="ctl" id="langen" aria-pressed="false" onclick="setLang('en')">EN</button>
+  <button class="ctl" id="theme" onclick="toggleTheme()" title="theme">◐</button>
+</div></header>
 
 <div class="wrap">
 
-<h1>
-  <span class="ko">평탄화는 사영이다 — 계보를 따라서</span>
-  <span class="en">Flattening is a projection — following the genealogy</span>
-</h1>
+<h1><span class="ko">모나드 평탄화, 세 가지 언어로</span><span class="en">Monad flattening, in three languages</span></h1>
+<p class="tagline"><span class="ko">기계 · 범주 · 행렬 — 그리고 그 셋이 만나는 하나의 사영</span>
+<span class="en">Machines · categories · matrices — and the one projection where they meet</span></p>
+
 <p class="lede">
-  <span class="ko">새 정리가 아닙니다. <b>70년 된</b> 정리입니다. 이 노트는 그 정리를 1955년 Mealy 기계에서
-  출발해 Lean 4 기계 검증 증명까지, 누가 언제 무엇을 했는지 따라가며 배웁니다.</span>
-  <span class="en">This is not a new theorem. It is a <b>70-year-old</b> one. This note follows it from
-  Mealy machines in 1955 to a machine-checked Lean 4 proof, tracking who did what, and when.</span>
+  <span class="ko">상태를 가진 계산을 두 번 이어 붙이면, 왜 한 번 하는 것과 같아질까요?
+  이 질문에 세 분야가 각자의 말로 같은 답을 합니다 — 1955년의 오토마타 이론, 1965년의 범주론, 그리고 선형대수.
+  이 노트는 세 답을 차례로 배우고, 마지막에 그것들이 문자 그대로 같은 대상, <b>하나의 사영</b>임을 봅니다.</span>
+  <span class="en">Join two stateful computations end to end — why is the result just another single computation?
+  Three fields answer this in their own words: automata theory in 1955, category theory in 1965, and linear algebra.
+  This note learns each answer in turn, then shows they are literally the same object: <b>one projection</b>.</span>
+</p>
+<p class="sub">
+  <span class="ko">모든 정리는 Lean 4로 기계 검증되어 있습니다. 문장 옆의 <code>이름</code>으로 저장소에서 증명을 찾을 수 있습니다.</span>
+  <span class="en">Every theorem is machine-checked in Lean 4. The <code>name</code> beside each statement locates its proof in the repository.</span>
 </p>
 
-<div class="callout">
-  <p style="margin:0">
-    <span class="ko"><b>이 저장소는 노벨티를 주장하지 않습니다.</b> 모든 재료가 교과서에 있습니다.
-    여기서 주장하는 것은 두 가지뿐입니다 — <b>전부 기계 검증되었다</b>는 것, 그리고
-    <b>한계까지 정리로 증명했다</b>는 것. 교육적 가치는 결과가 아니라 <i>경로</i>에 있습니다.</span>
-    <span class="en"><b>This repository claims no novelty.</b> Every ingredient is textbook. It claims
-    exactly two things — that everything is <b>machine-checked</b>, and that the
-    <b>limitations are proved too</b>. The pedagogical value is in the <i>route</i>, not the result.</span>
+<!-- ─────────── 0. Before you start ─────────── -->
+<div class="card">
+  <h4><span class="ko">이 노트가 가르치는 것</span><span class="en">What this note teaches</span></h4>
+  <ul>
+    <li><span class="ko">상태 기계, 상태 모나드의 Kleisli 사상, <code>0–1</code> 행렬이 <b>같은 것</b>인 이유</span>
+        <span class="en">Why state machines, Kleisli arrows of the state monad, and <code>0–1</code> matrices are <b>the same thing</b></span></li>
+    <li><span class="ko">모나드 곱셈 <code>μ</code>가 정확히 어떤 의미에서 <b>사영</b>인지 — 그리고 어떤 의미에서는 아닌지</span>
+        <span class="en">In exactly what sense the monad multiplication <code>μ</code> is a <b>projection</b> — and in what sense it is not</span></li>
+    <li><span class="ko">이 주제에서 누구나 빠지는 네 가지 함정과, 각각을 알아보는 도구</span>
+        <span class="en">The four traps everyone falls into here, and the tool that catches each</span></li>
+  </ul>
+  <h4 style="margin-top:.9rem"><span class="ko">필요한 배경</span><span class="en">What you need</span></h4>
+  <p style="margin:.2rem 0;font-size:.93rem">
+    <span class="ko">집합과 함수, 행렬 곱셈, 그리고 “모나드”라는 말을 들어본 정도. 범주론은 필요하지 않습니다 — 필요한 만큼 그 자리에서 소개합니다.</span>
+    <span class="en">Sets and functions, matrix multiplication, and having heard the word “monad”. No category theory is assumed — what is needed is introduced where it is used.</span>
   </p>
 </div>
 
-<!-- ───────────────── 1. Genealogy ───────────────── -->
-<h2 id="genealogy"><span class="num">1</span><span class="ko">계보</span><span class="en">Genealogy</span></h2>
-<p class="sub">
-  <span class="ko">굵은 점은 이 저장소가 직접 의존하는 마디입니다.</span>
-  <span class="en">Filled dots are the nodes this repository directly rests on.</span>
-</p>
+<!-- ─────────── 1. The question ─────────── -->
+<h2 id="q"><span class="num">1</span><span class="ko">문제: 계산을 두 번 하면</span><span class="en">The question: running a computation twice</span></h2>
 
-<ol class="tl">
-  <li class="key"><span class="yr">1955</span><span class="dot"></span>
-    <div class="what">Mealy machine — G. H. Mealy</div>
-    <div class="why"><span class="ko"><code>X × S → Y × S</code>. 이 저장소의 <code>ThreadCat</code>이 정확히 이것입니다. 모나드보다 10년 빠릅니다.</span>
-    <span class="en"><code>X × S → Y × S</code>. This repository's <code>ThreadCat</code> is exactly this — a decade before monads.</span></div></li>
-
-  <li><span class="yr">1962</span><span class="dot"></span>
-    <div class="what">Lawvere — the category <code>Stoch</code></div>
-    <div class="why"><span class="ko">Kleisli 범주가 일반적으로 도입되기도 전에 확률 쪽 사례가 먼저 나왔습니다.</span>
-    <span class="en">The probabilistic instance appeared before Kleisli categories existed in general.</span></div></li>
-
-  <li class="key"><span class="yr">1965</span><span class="dot"></span>
-    <div class="what">Kleisli — <i>Every standard construction is induced by a pair of adjoint functors</i></div>
-    <div class="why"><span class="ko"><code>Kl(G∘F)(X,Y) ≅ C(FX,FY)</code>. 같은 해 Eilenberg–Moore가 독립적으로 대수 범주를 구성했습니다.
-    이 정리가 상태 모나드의 Kleisli 사상을 Mealy 기계와 이어줍니다.</span>
-    <span class="en"><code>Kl(G∘F)(X,Y) ≅ C(FX,FY)</code>. Eilenberg–Moore independently gave the algebra category the same year.
-    This is the theorem that links state-monad Kleisli arrows to Mealy machines.</span></div></li>
-
-  <li><span class="yr">1968</span><span class="dot"></span>
-    <div class="what">Karoubi envelope / idempotent completion</div>
-    <div class="why"><span class="ko">split idempotent가 표준 도구가 됩니다. <code>Tη ∘ μ</code>의 멱등성이 사는 곳입니다.</span>
-    <span class="en">Split idempotents become a standard tool. This is where the idempotence of <code>Tη ∘ μ</code> lives.</span></div></li>
-
-  <li><span class="yr">1982</span><span class="dot"></span>
-    <div class="what">Giry — <code>Stoch</code> as a Kleisli category</div>
-    <div class="why"><span class="ko">분포 모나드. 선형화가 <code>0–1</code> 행렬로 무너지지 <i>않는</i> 첫 사례.</span>
-    <span class="en">The distribution monad — the first case where linearisation does <i>not</i> collapse to <code>0–1</code> matrices.</span></div></li>
-
-  <li class="key"><span class="yr">1991</span><span class="dot"></span>
-    <div class="what">Moggi — <i>Notions of computation and monads</i></div>
-    <div class="why"><span class="ko">상태 모나드가 계산 효과 의미론의 표준이 됩니다. 이듬해 Wadler가 대중화하고 Haskell에 들어갑니다.</span>
-    <span class="en">The state monad becomes the standard semantics of effects; Wadler popularises it the next year, into Haskell.</span></div></li>
-
-  <li><span class="yr">2003<br>–08</span><span class="dot"></span>
-    <div class="what">Pattinson; Bonsangue–Rutten–Silva</div>
-    <div class="why"><span class="ko">Mealy 기계를 <code>M(S) = (B × S)<sup>A</sup></code>의 coalgebra로 보는 관점.</span>
-    <span class="en">Mealy machines as coalgebras of <code>M(S) = (B × S)<sup>A</sup></code>.</span></div></li>
-
-  <li class="key"><span class="yr">2016</span><span class="dot"></span>
-    <div class="what">Oliveira &amp; Miraldo — <i>Keep definition, change category</i></div>
-    <div class="why"><span class="ko"><b>“Mealy 기계 = 상태 모나드의 Kleisli 사상”</b>을 명시합니다. 이 저장소 2장의 정리가 바로 이 문장입니다.</span>
-    <span class="en">States explicitly that <b>Mealy machines are the Kleisli morphisms of the state monad</b> — this repository's §2 theorem.</span></div></li>
-
-  <li><span class="yr">2020</span><span class="dot"></span>
-    <div class="what">Fritz — Markov categories</div>
-    <div class="why"><span class="ko">확률 쪽의 현대적 정리. 선형 모델이 실제로 내용을 갖는 영역.</span>
-    <span class="en">The modern synthesis on the probabilistic side — where a linear model genuinely carries content.</span></div></li>
-
-  <li><span class="yr">2025</span><span class="dot"></span>
-    <div class="what">Effectful Mealy Machines (CALCO 2025); Markov kernels in Mathlib</div>
-    <div class="why"><span class="ko">여전히 활발합니다. 죽은 분야가 아니라 잘 측량된 분야입니다.</span>
-    <span class="en">Still active. Not a dead field — a well-surveyed one.</span></div></li>
-</ol>
-
-<!-- ───────────────── 2. The mathematics ───────────────── -->
-<h2 id="math"><span class="num">2</span><span class="ko">수학, 다섯 단계</span><span class="en">The mathematics, in five steps</span></h2>
-
-<h3><span class="ko">단계 0 — 왜 “μ ∘ μ = μ”는 문장이 아닌가</span><span class="en">Step 0 — why “μ ∘ μ = μ” is not a statement</span></h3>
 <p>
-  <span class="ko"><code>μ : T² ⇒ T</code>는 서로 <i>다른</i> 두 함자 사이의 사상입니다. 정의역과 공역이 다르므로 멱등일 수 없습니다.
-  타입이 안 맞는 것이지, 거짓인 것도 아닙니다. 형식화가 가장 먼저 잡아내는 종류의 오류입니다.</span>
-  <span class="en"><code>μ : T² ⇒ T</code> maps between two <i>different</i> functors. Source and target differ, so it cannot be
-  idempotent — it is not false, it is ill-typed. This is the first kind of error formalisation catches.</span>
+  <span class="ko">가장 작은 상태 집합으로 시작합시다. <code>S = Bool</code>. <b>상태를 가진 계산</b>이란 현재 상태를 읽고, 값을 하나 내고, 다음 상태를 남기는 것입니다:</span>
+  <span class="en">Start with the smallest state set, <code>S = Bool</code>. A <b>stateful computation</b> reads the current state, produces a value, and leaves a next state:</span>
 </p>
-
-<h3><span class="ko">단계 1 — μ는 split epi다</span><span class="en">Step 1 — μ is a split epimorphism</span></h3>
-<div class="eq">μ ∘ Tη = id        ⟹   e := Tη ∘ μ : T² → T²   is idempotent</div>
+<div class="eq">t : S → X × S          t(s) = (value, next state)</div>
 <p>
-  <span class="ko">모나드 법칙 하나에서 한 줄로 나옵니다. <code>T</code>는 <code>T²</code>의 retract이고, <code>e</code>는
-  <b>진짜</b> 멱등원입니다 — 항등이 아님도 반례로 증명했습니다.</span>
-  <span class="en">One line from a single monad law. <code>T</code> is a retract of <code>T²</code>, and <code>e</code> is a
-  <b>proper</b> idempotent — not the identity, proved by counterexample.</span>
+  <span class="ko">이제 <i>계산을 내놓는 계산</i>을 생각해 봅시다. 바깥 단계가 실행되면 값 대신 <b>또 하나의 계산</b> <code>ψ</code>와 상태 <code>s′</code>가 나옵니다.
+  최종 답을 얻으려면 <code>ψ</code>를 <code>s′</code>에서 실행해야 합니다. 그 “이어 붙이기”가 <code>μ</code>입니다:</span>
+  <span class="en">Now consider a <i>computation that returns a computation</i>. Running the outer stage yields not a value but <b>another computation</b> <code>ψ</code> together with a state <code>s′</code>.
+  To get a final answer, run <code>ψ</code> starting from <code>s′</code>. That joining step is <code>μ</code>:</span>
+</p>
+<div class="eq">μ(Φ)(s) = ψ(s′)        where  Φ(s) = (ψ, s′)</div>
+<div class="callout"><p>
+  <span class="ko"><b>이 노트의 질문.</b> <code>μ</code>는 어떤 <i>종류</i>의 연산인가? 답은 “사영”입니다. 하지만 <b>무엇 위로의</b> 사영인가?
+  그 답을 정확히 말하는 데 세 가지 언어가 필요합니다.</span>
+  <span class="en"><b>The question of this note.</b> What <i>kind</i> of operation is <code>μ</code>? The answer is “a projection” — but a projection <b>onto what</b>?
+  Saying that precisely takes three languages.</span>
+</p></div>
+
+<!-- ─────────── 2. Machines ─────────── -->
+<h2 id="machines"><span class="num">2</span><span class="ko">첫 번째 언어 — 기계</span><span class="en">First language — machines</span>
+  <span class="era">Mealy · 1955</span></h2>
+
+<p>
+  <span class="ko">오토마타 이론은 같은 대상을 이미 70년 전에 이름 붙였습니다. 입력 알파벳 <code>X</code>, 출력 알파벳 <code>Y</code>, 상태 집합 <code>S</code>를 가진 <b>Mealy 기계</b>는 하나의 함수입니다:</span>
+  <span class="en">Automata theory named this object seventy years ago. A <b>Mealy machine</b> with input alphabet <code>X</code>, output alphabet <code>Y</code> and state set <code>S</code> is a single function:</span>
+</p>
+<div class="eq">m : X × S → Y × S        (input, current state) ↦ (output, next state)</div>
+<p>
+  <span class="ko">기계를 <b>이어 붙이는</b> 것은 그저 함수 합성입니다: 첫 기계의 (출력, 상태)를 둘째 기계의 (입력, 상태)로 넘깁니다.
+  아무것도 하지 않는 기계 <code>id</code>가 항등원입니다. 그래서 Mealy 기계들은 <b>범주</b>를 이룹니다 — 대상은 알파벳, 사상은 기계. 이 범주를 <code>𝒮_S</code>라 부르겠습니다.</span>
+  <span class="en"><b>Chaining</b> two machines is plain function composition: the first machine's (output, state) becomes the second's (input, state).
+  The do-nothing machine <code>id</code> is the identity. So Mealy machines form a <b>category</b> — objects are alphabets, morphisms are machines. Call it <code>𝒮_S</code>.</span>
+</p>
+<div class="def"><div class="t"><span class="ko">정의</span><span class="en">Definition</span></div>
+  <span class="ko"><code>𝒮_S</code>: 대상은 집합, <code>X ⟶ Y</code>는 함수 <code>X × S → Y × S</code>, 합성은 함수 합성.</span>
+  <span class="en"><code>𝒮_S</code>: objects are sets; a morphism <code>X ⟶ Y</code> is a function <code>X × S → Y × S</code>; composition is function composition.</span>
+  <span class="lean">Lean — <b>ThreadCat</b></span>
+</div>
+
+<details class="ex"><summary><span class="tag">2.1</span><span class="ko">기계 세기. <code>X = Y = S = Bool</code>일 때 Mealy 기계는 몇 개인가?</span><span class="en">Counting. How many Mealy machines are there with <code>X = Y = S = Bool</code>?</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <span class="ko">정의역 <code>X × S</code>는 4개, 공역 <code>Y × S</code>도 4개. 함수는 <code>4⁴ = 256</code>개. 이 숫자를 기억해 두세요 — 6절에서 다시 나옵니다.</span>
+  <span class="en">The domain <code>X × S</code> has 4 elements, the codomain <code>Y × S</code> has 4. That is <code>4⁴ = 256</code> functions. Remember this number — it returns in §6.</span></div>
+</details>
+<details class="ex"><summary><span class="tag">2.2</span><span class="ko">“상태를 뒤집고, 뒤집힌 상태를 보고하는” 기계를 <code>X = {•}</code>, <code>Y = S = Bool</code>로 적어 보라.</span><span class="en">Write the machine “flip the state, report the flipped state” with <code>X = {•}</code>, <code>Y = S = Bool</code>.</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <code>m(•, s) = (¬s, ¬s)</code>. <span class="ko">5절의 위젯이 정확히 이 기계로 돌아갑니다.</span><span class="en">The widget in §5 runs on exactly this machine.</span></div>
+</details>
+
+<!-- ─────────── 3. Categories ─────────── -->
+<h2 id="cats"><span class="num">3</span><span class="ko">두 번째 언어 — 범주</span><span class="en">Second language — categories</span>
+  <span class="era">Kleisli · 1965 &nbsp;·&nbsp; Moggi · 1991</span></h2>
+
+<p>
+  <span class="ko">범주론은 “상태를 가진 계산”을 <b>모나드</b>로 조직합니다. 상태 모나드는 타입 <code>X</code>에 계산의 타입을 대응시킵니다:</span>
+  <span class="en">Category theory organises “stateful computation” as a <b>monad</b>. The state monad assigns to a type <code>X</code> the type of computations:</span>
+</p>
+<div class="eq">T_S X = S → X × S
+
+η : X → T_S X            η(x)(s) = (x, s)         <span class="ko">값을 그대로 돌려줌</span><span class="en">return without touching the state</span>
+μ : T_S(T_S X) → T_S X   μ(Φ)(s) = ψ(s′)          <span class="ko">1절의 이어 붙이기</span><span class="en">the joining step of §1</span></div>
+<p>
+  <span class="ko">계산 사이의 사상 — 그러니까 “<code>X</code>를 받아 <code>Y</code>의 계산을 내놓는 것” — 은 <b>Kleisli 사상</b> <code>X → T_S Y</code>입니다. 그런데 <code>X → (S → Y × S)</code>의 커링을 풀면 정확히 2절의 기계 <code>X × S → Y × S</code>가 나옵니다.
+  이것은 우연이 아니라 <b>Kleisli의 1965년 정리</b>의 특수한 경우입니다: 수반 <code>F ⊣ G</code>에서 온 모나드 <code>GF</code>에 대해 <code>Kl(GF)(X,Y) ≅ C(FX, FY)</code>. 여기서 <code>F = − × S</code>입니다.</span>
+  <span class="en">A morphism between computations — “take an <code>X</code>, return a computation of <code>Y</code>” — is a <b>Kleisli arrow</b> <code>X → T_S Y</code>. Uncurry <code>X → (S → Y × S)</code> and you get exactly the machine <code>X × S → Y × S</code> of §2.
+  That is no coincidence: it is a special case of <b>Kleisli's 1965 theorem</b>, <code>Kl(GF)(X,Y) ≅ C(FX, FY)</code> for a monad <code>GF</code> coming from an adjunction <code>F ⊣ G</code>. Here <code>F = − × S</code>.</span>
+</p>
+<div class="def"><div class="t"><span class="ko">정리</span><span class="en">Theorem</span></div>
+  <span class="ko"><code>Kl(T_S) ≅ 𝒮_S</code>. 대상 위에서는 항등, 사상 집합 위에서는 전단사이며, Kleisli 합성을 함수 합성으로 보냅니다. 즉 <b>Kleisli 사상은 Mealy 기계입니다</b> (Oliveira &amp; Miraldo 2016이 명시).</span>
+  <span class="en"><code>Kl(T_S) ≅ 𝒮_S</code>: identity on objects, bijective on hom-sets, carrying Kleisli composition to function composition. In short, <b>Kleisli arrows are Mealy machines</b> (stated explicitly by Oliveira &amp; Miraldo, 2016).</span>
+  <span class="lean">Lean — <b>threadEquiv</b> · <b>uncur</b> · <b>instFullUncur</b> · <b>instFaithfulUncur</b></span>
+</div>
+
+<h3><span class="ko">μ가 사영인 첫 번째 의미</span><span class="en">The first sense in which μ is a projection</span></h3>
+<p>
+  <span class="ko">모나드 법칙 중 하나가 특히 중요합니다:</span>
+  <span class="en">One monad law does most of the work:</span>
+</p>
+<div class="eq">μ ∘ Tη = id</div>
+<p>
+  <span class="ko">즉 <code>Tη</code>는 <code>μ</code>의 <b>단면(section)</b>이고, <code>μ</code>는 <b>split epimorphism</b>입니다. 그러면 반대 순서의 합성</span>
+  <span class="en">So <code>Tη</code> is a <b>section</b> of <code>μ</code>, and <code>μ</code> is a <b>split epimorphism</b>. Then the composite in the other order,</span>
+</p>
+<div class="eq">e := Tη ∘ μ : T² → T²        e ∘ e = Tη ∘ (μ ∘ Tη) ∘ μ = Tη ∘ μ = e</div>
+<p>
+  <span class="ko">는 <code>T²</code> 위의 <b>멱등원</b>입니다. <code>T</code>는 <code>T²</code>의 retract이고, <code>e</code>는 그 위로의 사영입니다. 이것이 “<code>μ</code>는 사영이다”의 첫 번째, 가장 일반적인 의미입니다 — 그리고 <code>e</code>는 항등이 아닙니다: 안쪽 계산이 상태를 실제로 참조하면 평탄화 후 복원되지 않습니다.</span>
+  <span class="en">is an <b>idempotent</b> on <code>T²</code>. <code>T</code> is a retract of <code>T²</code>, and <code>e</code> projects onto it. This is the first and most general sense in which “<code>μ</code> is a projection” — and <code>e</code> is not the identity: an inner computation that genuinely consults its state cannot be recovered after flattening.</span>
 </p>
 <span class="lean">Lean — <b>St.mu_map_eta</b> · <b>St.collapse_idem</b> · <b>St.collapse_ne_id</b></span>
 
-<h3><span class="ko">단계 2 — Kleisli 사상은 Mealy 기계다</span><span class="en">Step 2 — Kleisli arrows are Mealy machines</span></h3>
-<div class="eq">Kl(T_S)(X, Y)  ≅  Set(X × S, Y × S)      (Kleisli 1965 + Mealy 1955)</div>
+<details class="ex"><summary><span class="tag">3.1</span><span class="ko">“<code>μ ∘ μ = μ</code>”를 적어 보라. 정의역과 공역은 무엇인가?</span><span class="en">Try to write “<code>μ ∘ μ = μ</code>”. What are the domain and codomain?</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <span class="ko">적을 수 없습니다. 왼쪽 <code>μ ∘ μ</code>는 <code>T³ → T</code>, 오른쪽 <code>μ</code>는 <code>T² → T</code>. 정의역이 다릅니다. 거짓이 아니라 <b>문장이 아닙니다</b>. “<code>μ</code>는 멱등이다”라고 말하고 싶은 충동은 자연스럽지만, 그 충동이 실제로 가리키는 대상은 위의 <code>e = Tη ∘ μ</code>입니다.</span>
+  <span class="en">You cannot. The left side <code>μ ∘ μ</code> has type <code>T³ → T</code>; the right side <code>μ</code> has type <code>T² → T</code>. The domains differ. It is not false — it is <b>not a statement</b>. The urge to say “<code>μ</code> is idempotent” is natural, but what it actually points at is <code>e = Tη ∘ μ</code> above.</span></div>
+</details>
+<details class="ex"><summary><span class="tag">3.2</span><span class="ko">위 논증에서 상태 모나드에 특유한 것은 무엇인가?</span><span class="en">What in the argument above is specific to the state monad?</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <span class="ko"><b>아무것도 없습니다.</b> <code>μ ∘ Tη = id</code>는 모든 모나드의 법칙이므로 <code>Tη ∘ μ</code>는 <b>모든</b> lawful 모나드에서 멱등입니다. 상태 모나드를 배웠다고 생각했지만, 사실 모나드 일반에 대한 사실을 배운 것입니다. 7절에서 다시 봅니다.</span>
+  <span class="en"><b>Nothing.</b> <code>μ ∘ Tη = id</code> is a law of every monad, so <code>Tη ∘ μ</code> is idempotent for <b>every</b> lawful monad. You thought you were learning about the state monad; you learned something about monads in general. §7 returns to this.</span>
+  <span class="lean">Lean — <b>mcollapse_idem</b> · <b>St.collapse_eq_mcollapse</b></span></div>
+</details>
+
+<!-- ─────────── 4. Matrices ─────────── -->
+<h2 id="matrices"><span class="num">4</span><span class="ko">세 번째 언어 — 행렬</span><span class="en">Third language — matrices</span>
+  <span class="era"><span class="ko">자유 벡터공간</span><span class="en">free vector spaces</span></span></h2>
+
 <p>
-  <span class="ko">이 단계가 <b>선형 모델을 가능하게 만드는 전부</b>입니다. Kleisli 사상 <code>X → S → Y × S</code>는
-  고차라서 벡터공간에 들어가지 않습니다. 커링을 풀면 <i>평범한 집합</i> 사이의 함수가 되고, 집합 사이 함수는 선형화됩니다.</span>
-  <span class="en">This step is <b>what makes a linear model possible at all</b>. A Kleisli arrow <code>X → S → Y × S</code>
-  is higher-order and does not embed in a vector space. Uncurried, it is a function between <i>plain sets</i>, and those linearise.</span>
+  <span class="ko">유한집합 <code>A</code> 위의 <b>자유 벡터공간</b> <code>ℝ[A]</code>는 <code>A</code>의 원소 <code>δ_a</code>를 기저로 갖습니다. 함수 <code>g : A → B</code>는 선형사상 <code>ℝ[g] : δ_a ↦ δ_{g(a)}</code>가 되고, 그 행렬은 각 열에 <code>1</code>이 정확히 하나 있는 <b><code>0–1</code> 행렬</b>입니다. 합성은 행렬 곱입니다.</span>
+  <span class="en">The <b>free vector space</b> <code>ℝ[A]</code> on a finite set <code>A</code> has the elements <code>δ_a</code> as a basis. A function <code>g : A → B</code> becomes the linear map <code>ℝ[g] : δ_a ↦ δ_{g(a)}</code>, whose matrix is a <b><code>0–1</code> matrix</b> with exactly one <code>1</code> per column. Composition is matrix multiplication.</span>
 </p>
-<div class="callout warn">
-  <p style="margin:0;font-size:.92rem">
-    <span class="ko"><b>주의 — 흔한 오해.</b> 이것은 comonad <code>− × S</code>의 <b>co-Kleisli 범주가 아닙니다</b>.
-    co-Kleisli hom은 <code>X × S → Y</code>입니다. <code>|X|=|Y|=|S|=2</code>에서 <b>16 대 256</b>으로 갈립니다.
-    맞는 말은 “<code>− × S</code>의 full image”입니다. (이 저장소도 한 번 틀렸습니다 — §4 참조.)</span>
-    <span class="en"><b>Common trap.</b> This is <b>not</b> the co-Kleisli category of the comonad <code>− × S</code>,
-    whose hom-sets are <code>X × S → Y</code> — <b>16 against 256</b> when <code>|X|=|Y|=|S|=2</code>.
-    The correct phrase is “the full image of <code>− × S</code>”. (This repository got it wrong once — see §4.)</span>
-  </p>
+<p>
+  <span class="ko">2절의 기계는 함수이므로 선형화됩니다. 3절 덕분에 Kleisli 사상도 그렇습니다. 이렇게 함자가 하나 생깁니다:</span>
+  <span class="en">Machines are functions, so they linearise; by §3, so do Kleisli arrows. This yields a functor:</span>
+</p>
+<div class="eq">Lin : Kl(T_S) ⥤ Vect_ℝ        X ↦ ℝ[X × S] ≅ ℝ[X] ⊗ ℝ[S]        k ↦ ℝ[k̂]</div>
+<div class="def"><div class="t"><span class="ko">정리</span><span class="en">Theorem</span></div>
+  <span class="ko"><code>Lin</code>은 <b>충실(faithful)</b>하지만 <b>충만(full)하지 않습니다</b>. 서로 다른 계산은 서로 다른 행렬을 갖습니다. 그러나 <code>2·id</code>는 어떤 계산의 행렬도 아닙니다.</span>
+  <span class="en"><code>Lin</code> is <b>faithful</b> but <b>not full</b>. Distinct computations have distinct matrices; but <code>2·id</code> is the matrix of no computation.</span>
+  <span class="lean">Lean — <b>instFaithfulLin</b> · <b>two_smul_id_not_lin</b></span>
 </div>
-<span class="lean">Lean — <b>threadEquiv</b> · <b>uncur</b> · <b>instFullUncur</b> / <b>instFaithfulUncur</b></span>
-
-<h3><span class="ko">단계 3 — 선형화는 충실하지만 충만하지 않다</span><span class="en">Step 3 — linearisation is faithful, not full</span></h3>
-<div class="eq">Lin S : Kl(T_S) ⥤ Vect_ℝ      X ↦ ℝ[X × S] ≅ ℝ[X] ⊗ ℝ[S]</div>
 <p>
-  <span class="ko"><b>충실</b>: 서로 다른 계산은 서로 다른 행렬을 갖습니다 — 행렬로 추론해도 됩니다.
-  <b>충만하지 않음</b>: <code>2·id</code>는 어떤 계산의 선형화도 아닙니다 — 벡터공간은 엄밀히 더 큽니다.
-  두 방향 다 중요합니다.</span>
-  <span class="en"><b>Faithful</b>: distinct computations have distinct matrices, so reasoning through matrices is licensed.
-  <b>Not full</b>: <code>2·id</code> is the linearisation of nothing — the vector space is a strict enlargement. Both directions matter.</span>
+  <span class="ko">두 방향 모두 뜻이 있습니다. 충실성은 <i>행렬로 계산에 대해 추론해도 된다</i>는 허가입니다. 충만하지 않음은 <i>행렬 위에서 한 연산이 계산으로 되돌아온다는 보장은 없다</i>는 경고입니다. 벡터공간은 계산의 세계를 재서술한 것이 아니라 엄밀히 확장한 것입니다.</span>
+  <span class="en">Both directions carry meaning. Faithfulness is the licence to <i>reason about computations through their matrices</i>. Failure of fullness is the warning that <i>an operation done on matrices need not come back as a computation</i>. The vector space strictly enlarges the world of computations rather than re-describing it.</span>
 </p>
-<span class="lean">Lean — <b>instFaithfulLin</b> · <b>two_smul_id_not_lin</b></span>
 
-<h3><span class="ko">단계 4 — 평탄화 = 그래프 위로의 사영</span><span class="en">Step 4 — flattening = projection onto a graph</span></h3>
+<details class="ex"><summary><span class="tag">4.1</span><span class="ko">연습 2.2의 기계 <code>m(•,s) = (¬s, ¬s)</code>의 행렬을 적어 보라. 기저 순서는 <code>(•,0), (•,1)</code>.</span><span class="en">Write the matrix of the machine from 2.2, <code>m(•,s) = (¬s, ¬s)</code>, in the basis order <code>(•,0), (•,1)</code>.</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <code>δ_(•,0) ↦ δ_(1,1)</code>, <code>δ_(•,1) ↦ δ_(0,0)</code>. <span class="ko">공역 기저 <code>(0,0),(0,1),(1,0),(1,1)</code>에서 <code>4×2</code> 행렬은 첫 열에 <code>(0,0,0,1)</code>, 둘째 열에 <code>(1,0,0,0)</code>. 각 열에 <code>1</code>이 하나 — 모든 기계의 행렬이 이 모양입니다.</span>
+  <span class="en">In the codomain basis <code>(0,0),(0,1),(1,0),(1,1)</code> the <code>4×2</code> matrix has first column <code>(0,0,0,1)</code> and second column <code>(1,0,0,0)</code>. One <code>1</code> per column — every machine's matrix looks like this.</span></div>
+</details>
+<details class="ex"><summary><span class="tag">4.2</span><span class="ko"><code>2·id</code>는 왜 어떤 기계의 행렬도 아닌가?</span><span class="en">Why is <code>2·id</code> the matrix of no machine?</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <span class="ko">기계의 행렬은 <code>δ_p</code>를 <b>어떤 기저벡터</b> <code>δ_q</code>로 보냅니다. <code>2·id</code>는 <code>δ_p ↦ 2δ_p</code>인데, <code>2δ_p</code>는 기저벡터가 아닙니다. 계수 비교: <code>2δ_p</code>의 <code>p</code> 성분은 <code>2</code>, 어떤 <code>δ_q</code>의 <code>p</code> 성분은 <code>0</code> 또는 <code>1</code>.</span>
+  <span class="en">A machine's matrix sends <code>δ_p</code> to <b>some basis vector</b> <code>δ_q</code>. But <code>2·id</code> sends <code>δ_p ↦ 2δ_p</code>, which is not a basis vector. Compare coefficients: the <code>p</code>-entry of <code>2δ_p</code> is <code>2</code>; the <code>p</code>-entry of any <code>δ_q</code> is <code>0</code> or <code>1</code>.</span></div>
+</details>
+
+<!-- ─────────── 5. Where they meet ─────────── -->
+<h2 id="meet"><span class="num">5</span><span class="ko">세 언어가 만나는 곳 — 사영</span><span class="en">Where the three languages meet — the projection</span></h2>
+
 <p>
-  <span class="ko">두 단계를 잇기 <i>전</i>에는 두 번째 단계의 입력 상태가 <b>자유 변수</b>입니다. 그래서 무대는
-  <b>겹친 배치 집합</b> <code>(X × S) × S</code>입니다. 평탄화란 그 자유 슬롯에 전이함수 <code>σ</code>를 <b>대입</b>하는 일입니다.</span>
-  <span class="en">Before the two stages are joined, the second stage's input state is a <b>free parameter</b>.
-  The stage is therefore the <b>doubled configuration set</b> <code>(X × S) × S</code>, and flattening is
-  <b>substituting</b> the transition function <code>σ</code> into that free slot.</span>
+  <span class="ko">이제 1절의 질문으로 돌아갑니다. 두 단계 계산을 <i>잇기 전</i>의 상태를 봅시다. 바깥 단계는 상태 <code>s₁</code>을 받아 <code>(ψ, s′)</code>를 냅니다. 안쪽 단계 <code>ψ</code>는 <b>어떤</b> 상태에서든 실행될 수 있습니다 — 잇기 전에는 그 시작 상태가 <b>자유 변수</b>입니다. 그것을 <code>s₂</code>라 부릅시다.</span>
+  <span class="en">Return to §1. Look at a two-stage computation <i>before</i> the stages are joined. The outer stage takes a state <code>s₁</code> and yields <code>(ψ, s′)</code>. The inner stage <code>ψ</code> could be started from <b>any</b> state — before joining, its start state is a <b>free variable</b>. Call it <code>s₂</code>.</span>
 </p>
-<div class="eq">μ ∘ t  =  expand t ∘ graph σ          ← 정의상 성립 / true by definition
-
-Flat ∘ Sect σ = id        π_σ := Sect σ ∘ Flat        π_σ ∘ π_σ = π_σ
-π_σ ( δ_((x,s₁), s₂) )  =  δ_((x,s₁), σ(x,s₁))</div>
-<span class="lean">Lean — <b>threadEquiv_mu</b> · <b>Flat_comp_Sect</b> · <b>proj_comp_proj</b> · <b>mu_eq_pi</b></span>
-
-<h3><span class="ko">단계 5 — 사영을 재어본다</span><span class="en">Step 5 — measuring the projection</span></h3>
-<div class="eq">dim ambient = |X|·|S|²      rank π_σ = tr π_σ = |X|·|S|      dim ker π_σ = |X|·|S|·(|S|−1)</div>
 <p>
-  <span class="ko">rank와 trace가 <code>σ</code>에 <b>무관</b>합니다. 마지막 줄이 평탄화가 파괴하는 차원 수입니다.</span>
-  <span class="en">Rank and trace are <b>independent of</b> <code>σ</code>. The last line counts the dimensions flattening destroys.</span>
+  <span class="ko">그래서 무대는 배치 집합 <code>X × S</code>가 아니라 <b>겹친 배치 집합</b> <code>(X × S) × S</code>입니다: 값, 바깥 상태, 그리고 자유로운 안쪽 상태. 잇는다는 것은 <b>자유 슬롯에 바깥 단계가 실제로 남긴 상태를 대입하는 것</b>입니다. 그 “실제로 남긴 상태”를 주는 함수를 <b>전이함수</b> <code>σ : X × S → S</code>라 하겠습니다.</span>
+  <span class="en">So the stage is not the configuration set <code>X × S</code> but the <b>doubled configuration set</b> <code>(X × S) × S</code>: a value, the outer state, and the free inner state. Joining means <b>substituting into the free slot the state the outer stage actually left</b>. Call the function giving that state the <b>transition function</b> <code>σ : X × S → S</code>.</span>
 </p>
-<span class="lean">Lean — <b>finrank_range_proj</b> · <b>trace_proj</b> · <b>finrank_ker_proj</b></span>
+<div class="eq">graph σ : X × S → (X × S) × S        p ↦ (p, σ p)        <span class="ko">자유 슬롯을 채움</span><span class="en">fill the free slot</span>
+fst     : (X × S) × S → X × S        (p, s₂) ↦ p        <span class="ko">자유 슬롯을 버림</span><span class="en">forget the free slot</span>
 
-<!-- ───────────────── 3. Play ───────────────── -->
-<h2 id="play"><span class="num">3</span><span class="ko">직접 해보기</span><span class="en">Try it</span></h2>
+μ ∘ t  =  expand t ∘ graph σ_t         ← <span class="ko">정의에서 곧바로</span><span class="en">immediate from the definitions</span></div>
+<p>
+  <span class="ko">둘 다 집합 사이 함수이므로 4절의 방법으로 선형화됩니다. <code>Sect σ := ℝ[graph σ]</code>, <code>Flat := ℝ[fst]</code>라 두면:</span>
+  <span class="en">Both are functions between sets, so §4 linearises them. Put <code>Sect σ := ℝ[graph σ]</code> and <code>Flat := ℝ[fst]</code>:</span>
+</p>
+<div class="eq">Flat ∘ Sect σ = id                                 (retraction)
+π_σ := Sect σ ∘ Flat          π_σ ∘ π_σ = π_σ         (idempotent)
+π_σ ( δ_((x,s₁), s₂) )  =  δ_((x,s₁), σ(x,s₁))       (on the basis)</div>
+<div class="def"><div class="t"><span class="ko">주정리</span><span class="en">Main theorem</span></div>
+  <span class="ko"><code>π_σ</code>는 겹친 상태공간을 <b>전이함수의 그래프 위로 사영</b>하는 멱등 선형사상이고, 임의의 중첩 계산 <code>t</code>에 대해</span>
+  <span class="en"><code>π_σ</code> is the idempotent linear map that <b>projects the doubled state space onto the graph of the transition function</b>, and for every nested computation <code>t</code>,</span>
+  <div class="eq" style="margin:.6rem 0">lin(expand t) ∘ π_σ  =  lin(μ ∘ t) ∘ Flat</div>
+  <span class="ko">— 그래프 위로 사영한 뒤 실행하는 것은 평탄화한 뒤 실행하는 것과 같습니다. 3절의 <code>e = Tη ∘ μ</code>를 행렬의 언어로 옮긴 것이 바로 이것입니다.</span>
+  <span class="en">— projecting onto the graph and then running equals flattening and then running. This is §3's <code>e = Tη ∘ μ</code>, said in the language of matrices.</span>
+  <span class="lean">Lean — <b>threadEquiv_mu</b> · <b>Flat_comp_Sect</b> · <b>proj_comp_proj</b> · <b>mu_eq_pi</b></span>
+</div>
 
 <!-- Widget A -->
 <div class="w">
-  <h4><span class="ko">A. 평탄화는 대입이다</span><span class="en">A. Flattening is substitution</span></h4>
+  <h4><span class="ko">해보기 A — 평탄화는 대입이다</span><span class="en">Try it A — flattening is substitution</span></h4>
   <p class="hint">
-    <span class="ko"><code>S = X = Bool</code>. 바깥 단계가 상태를 뒤집고(<code>σ(x,s) = ¬s</code>), 안쪽 단계는 자기가 받은 상태를 보고합니다.
-    <code>Collapse.lean</code>의 <code>flipThenRead</code> 예제입니다.</span>
-    <span class="en"><code>S = X = Bool</code>. The outer stage flips the state (<code>σ(x,s) = ¬s</code>); the inner stage reports
-    whatever state it is handed. This is <code>flipThenRead</code> from <code>Collapse.lean</code>.</span>
+    <span class="ko">연습 2.2의 기계입니다. 바깥 단계가 상태를 뒤집으므로 <code>σ(x,s) = ¬s</code>. 바깥 상태 <code>s₁</code>과 자유 슬롯 <code>s₂</code>를 골라 보세요.</span>
+    <span class="en">The machine from 2.2: the outer stage flips the state, so <code>σ(x,s) = ¬s</code>. Choose the outer state <code>s₁</code> and the free slot <code>s₂</code>.</span>
   </p>
-  <div class="row"><span class="lbl">s₁ <span class="ko">(바깥)</span><span class="en">(outer)</span></span>
-    <span class="seg" id="segS1"></span></div>
-  <div class="row"><span class="lbl">s₂ <span class="ko">(자유 슬롯)</span><span class="en">(free slot)</span></span>
-    <span class="seg" id="segS2"></span></div>
+  <div class="row"><span class="lbl">s₁ <span class="ko">(바깥)</span><span class="en">(outer)</span></span><span class="seg" id="segS1"></span></div>
+  <div class="row"><span class="lbl">s₂ <span class="ko">(자유 슬롯)</span><span class="en">(free slot)</span></span><span class="seg" id="segS2"></span></div>
   <div class="out" id="outA"></div>
 </div>
 
+<h3><span class="ko">사영을 재어 보기</span><span class="en">Measuring the projection</span></h3>
+<div class="eq">dim ℝ[(X×S)×S] = |X|·|S|²        rank π_σ = tr π_σ = |X|·|S|        dim ker π_σ = |X|·|S|·(|S|−1)</div>
+<p>
+  <span class="ko">rank와 trace는 <code>σ</code>에 <b>무관</b>합니다 — 어떤 계산을 잇든 같은 수의 차원이 살아남습니다. 마지막 식이 평탄화가 버리는 차원의 수입니다.</span>
+  <span class="en">Rank and trace are <b>independent of</b> <code>σ</code> — whichever computation is joined, the same number of dimensions survives. The last formula counts the dimensions flattening discards.</span>
+</p>
+<span class="lean">Lean — <b>finrank_range_proj</b> · <b>trace_proj</b> · <b>finrank_ker_proj</b></span>
+
 <!-- Widget B -->
 <div class="w">
-  <h4><span class="ko">B. π<sub>σ</sub>의 행렬 — rank와 trace는 σ에 무관하다</span><span class="en">B. The matrix of π<sub>σ</sub> — rank and trace do not depend on σ</span></h4>
+  <h4><span class="ko">해보기 B — π<sub>σ</sub>의 행렬</span><span class="en">Try it B — the matrix of π<sub>σ</sub></span></h4>
   <p class="hint">
-    <span class="ko"><code>X = {a,b}</code>, <code>S = {0,1}</code>. 아래 네 버튼으로 전이함수 <code>σ</code>를 바꿔보세요.
-    행렬은 바뀌지만 <b>rank와 trace는 언제나 4</b>입니다. 초록 테두리는 고정점 — 그래프 위의 배치입니다.</span>
-    <span class="en"><code>X = {a,b}</code>, <code>S = {0,1}</code>. Change the transition function <code>σ</code> below.
-    The matrix changes, but <b>rank and trace are always 4</b>. Green outlines are fixed points — configurations already on the graph.</span>
+    <span class="ko"><code>X = {a,b}</code>, <code>S = {0,1}</code>. 전이함수 <code>σ</code>를 바꿔 보세요. 행렬은 바뀌지만 rank와 trace는 <b>언제나 4</b>입니다. 초록 테두리는 고정점 — 이미 그래프 위에 있는 배치입니다.</span>
+    <span class="en"><code>X = {a,b}</code>, <code>S = {0,1}</code>. Change the transition function <code>σ</code>. The matrix changes; rank and trace are <b>always 4</b>. Green outlines are fixed points — configurations already on the graph.</span>
   </p>
   <div id="sigmaCtl"></div>
   <div class="grid-m" id="matrix"></div>
   <div class="stat" id="statB"></div>
 </div>
 
-<!-- Widget C -->
+<details class="ex"><summary><span class="tag">5.1</span><span class="ko"><code>|S| = 3</code>, <code>|X| = 2</code>일 때 <code>rank π_σ</code>와 <code>dim ker π_σ</code>는?</span><span class="en">For <code>|S| = 3</code>, <code>|X| = 2</code>, what are <code>rank π_σ</code> and <code>dim ker π_σ</code>?</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <code>rank = 2·3 = 6</code>, <code>dim ker = 2·3·2 = 12</code>, <span class="ko">주변공간 차원 <code>18</code>. 세 개 중 두 개의 안쪽 상태 슬롯이 버려집니다.</span><span class="en">ambient dimension <code>18</code>. Two of every three inner-state slots are discarded.</span></div>
+</details>
+<details class="ex"><summary><span class="tag">5.2</span><span class="ko">위젯 B에서 <code>tr π_σ</code>가 왜 <code>σ</code>에 무관한지 행렬을 보고 설명해 보라.</span><span class="en">Looking at the matrix in widget B, explain why <code>tr π_σ</code> does not depend on <code>σ</code>.</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <span class="ko">대각선의 <code>1</code>은 고정점, 즉 <code>s₂ = σ(x,s₁)</code>인 배치입니다. 각 <code>(x,s₁)</code>마다 그런 <code>s₂</code>는 <b>정확히 하나</b> — <code>σ</code>가 무엇이든. 그래서 <code>tr = |X|·|S|</code>. 7절에서 이 관찰이 정리의 진짜 정체를 드러냅니다.</span>
+  <span class="en">A <code>1</code> on the diagonal is a fixed point — a configuration with <code>s₂ = σ(x,s₁)</code>. For each <code>(x,s₁)</code> there is <b>exactly one</b> such <code>s₂</code>, whatever <code>σ</code> is. Hence <code>tr = |X|·|S|</code>. In §7 this observation reveals what the theorem is really about.</span></div>
+</details>
+
+<!-- ─────────── 6. Traps ─────────── -->
+<h2 id="traps"><span class="num">6</span><span class="ko">흔한 함정 네 가지</span><span class="en">Four common traps</span></h2>
+<p>
+  <span class="ko">다음은 이 주제를 배우는 누구나 한 번쯤 빠지는 함정입니다. 종류가 서로 다르고, 잡아내는 도구도 서로 다릅니다 — 그 차이 자체가 배울 거리입니다. (이 저장소의 초기 버전도 넷 다 빠졌습니다.)</span>
+  <span class="en">Everyone learning this topic falls into these at least once. They are of different kinds and are caught by different tools — and that difference is itself worth learning. (Early versions of this repository fell into all four.)</span>
+</p>
+
+<h3><span class="ko">함정 1 — “μ는 멱등이다”</span><span class="en">Trap 1 — “μ is idempotent”</span></h3>
+<p>
+  <span class="ko">연습 3.1에서 보았습니다. <code>μ ∘ μ = μ</code>는 타입이 맞지 않습니다. 같은 이유로 “<code>P ∘ P = P</code>, 단 <code>P : V → W</code>”도 문장이 아닙니다. <b>잡는 도구:</b> 타입 검사기. 적는 즉시 거부됩니다.</span>
+  <span class="en">Seen in 3.1: <code>μ ∘ μ = μ</code> is ill-typed. For the same reason “<code>P ∘ P = P</code> with <code>P : V → W</code>” is not a statement. <b>Caught by:</b> the type checker, on sight.</span>
+</p>
+
+<h3><span class="ko">함정 2 — “텐서곱의 둘째 인자로 사영한다”</span><span class="en">Trap 2 — “project onto the second tensor factor”</span></h3>
+<p>
+  <span class="ko"><code>e_a ⊗ e_b ↦ e_b</code>는 자연스러워 보이지만, 일반 가군에는 <code>V ⊗ W → W</code>가 <b>없습니다</b>. 여기서 이 사상이 존재하는 이유는 <code>ℝ[S]</code>가 <b>자유</b>라서입니다: augmentation <code>ε : ℝ[S] → ℝ</code>, <code>e_s ↦ 1</code>이 있고, 원하는 사상은 <code>ε ⊗ id</code>에 단위자를 붙인 것입니다. <b>잡는 도구:</b> 라이브러리 — 그런 이름의 함수가 존재하지 않습니다.</span>
+  <span class="en"><code>e_a ⊗ e_b ↦ e_b</code> looks natural, but for general modules there is <b>no</b> map <code>V ⊗ W → W</code>. It exists here only because <code>ℝ[S]</code> is <b>free</b>: there is an augmentation <code>ε : ℝ[S] → ℝ</code>, <code>e_s ↦ 1</code>, and the map wanted is <code>ε ⊗ id</code> followed by the unitor. <b>Caught by:</b> the library — no function of that name exists.</span>
+</p>
+<span class="lean">Lean — <b>aug</b> · <b>Flat_eq_aug</b></span>
+
+<h3><span class="ko">함정 3 — “<code>T_S X</code> 자체를 선형화한다”</span><span class="en">Trap 3 — “linearise <code>T_S X</code> itself”</span></h3>
+<p>
+  <span class="ko">가장 유혹적인 함정입니다. <code>F(T_S X) ≅ (ℝ^S ⊗ ℝ^S) ⊗ ℝ^X</code>라고 쓰고 싶어집니다. 그러나 <code>T_S X = S → X × S</code>는 <b>함수집합</b>이라 원소 수가 <code>(|S||X|)^|S|</code>로 지수적입니다. 선형화해야 할 것은 대상 <code>T_S X</code>가 아니라 <b>사상 집합</b>이고, 그것이 5절의 겹친 배치 집합입니다. <b>잡는 도구:</b> 차원 세기.</span>
+  <span class="en">The most tempting trap. One wants to write <code>F(T_S X) ≅ (ℝ^S ⊗ ℝ^S) ⊗ ℝ^X</code>. But <code>T_S X = S → X × S</code> is a <b>function set</b>, with <code>(|S||X|)^|S|</code> elements — exponential. What must be linearised is not the object <code>T_S X</code> but the <b>hom-sets</b>, which is the doubled configuration set of §5. <b>Caught by:</b> counting dimensions.</span>
+</p>
 <div class="w">
-  <h4><span class="ko">C. 존재하지 않는 동형사상 — 차원으로 잡기</span><span class="en">C. The isomorphism that does not exist — caught by dimension</span></h4>
-  <p class="hint">
-    <span class="ko">이 프로젝트의 v1.1은 <code>F(T_S X) ≅ (ℝ<sup>S</sup> ⊗ ℝ<sup>S</sup>) ⊗ ℝ<sup>X</sup></code>를 주장했습니다.
-    <code>T_S X</code>는 <b>함수집합</b>이라 차원이 지수적으로 커집니다. 슬라이더를 움직여보세요.</span>
-    <span class="en">Version 1.1 of this project asserted <code>F(T_S X) ≅ (ℝ<sup>S</sup> ⊗ ℝ<sup>S</sup>) ⊗ ℝ<sup>X</sup></code>.
-    But <code>T_S X</code> is a <b>function set</b>, so its dimension grows exponentially. Move the sliders.</span>
-  </p>
+  <h4><span class="ko">해보기 C — 차원으로 잡기</span><span class="en">Try it C — catching it by dimension</span></h4>
   <div class="row"><span class="lbl">|S|</span><input type="range" id="cS" min="1" max="5" value="2"><span id="cSv" class="hl" style="font-family:var(--mono)">2</span></div>
   <div class="row"><span class="lbl">|X|</span><input type="range" id="cX" min="1" max="3" value="1"><span id="cXv" class="hl" style="font-family:var(--mono)">1</span></div>
   <div class="out" id="outC"></div>
 </div>
 
-<!-- ───────────────── 4. Errors ───────────────── -->
-<h2 id="errors"><span class="num">4</span><span class="ko">오류에서 배우기</span><span class="en">Learning from the errors</span></h2>
+<h3><span class="ko">함정 4 — “<code>Kl(T_S)</code>는 <code>− × S</code>의 co-Kleisli 범주다”</span><span class="en">Trap 4 — “<code>Kl(T_S)</code> is the co-Kleisli category of <code>− × S</code>”</span></h3>
 <p>
-  <span class="ko">이 프로젝트는 네 번 틀렸습니다. 네 번 다 <b>서로 다른 종류</b>의 오류입니다 —
-  형식화가 무엇을 잡아주고 무엇을 안 잡아주는지 보여주기 때문에, 결과보다 이쪽이 더 교육적입니다.</span>
-  <span class="en">This project was wrong four times, in four <b>different ways</b>. That is more instructive than the
-  result itself, because it shows what formalisation catches and what it does not.</span>
+  <span class="ko">그럴듯하지만 틀렸습니다. co-Kleisli 사상은 <code>X × S → Y</code>이고 Kleisli 사상은 <code>X × S → Y × S</code>입니다. 연습 2.1의 숫자를 기억하세요: <code>|X|=|Y|=|S|=2</code>에서 <b>16 대 256</b>. 맞는 말은 “<code>− × S</code>의 <b>full image</b>”입니다. <b>잡는 도구:</b> 세기 — 그리고 이것은 형식화가 <i>못</i> 잡는 함정입니다. Lean 코드는 맞고 주석만 틀릴 수 있기 때문입니다.</span>
+  <span class="en">Plausible but wrong. Co-Kleisli morphisms are <code>X × S → Y</code>; Kleisli morphisms are <code>X × S → Y × S</code>. Recall 2.1: for <code>|X|=|Y|=|S|=2</code> that is <b>16 against 256</b>. The correct phrase is “the <b>full image</b> of <code>− × S</code>”. <b>Caught by:</b> counting — and this is a trap formalisation <i>cannot</i> catch, because the Lean can be right while the comment is wrong.</span>
 </p>
-<table>
-  <tr>
-    <th><span class="ko">오류</span><span class="en">Error</span></th>
-    <th><span class="ko">종류</span><span class="en">Kind</span></th>
-    <th><span class="ko">무엇이 잡아냈나</span><span class="en">What caught it</span></th>
-  </tr>
-  <tr>
-    <td><code>μ ∘ μ = μ</code><br><code>P ∘ P = P</code> <span class="ko">(P의 정의역≠공역)</span><span class="en">(P's source ≠ target)</span></td>
-    <td><span class="ko">문장이 아님</span><span class="en">Not a statement</span></td>
-    <td><span class="ko">타입 검사기. 적는 순간 거부됩니다.</span><span class="en">The type checker — rejected on sight.</span></td>
-  </tr>
-  <tr>
-    <td><code>TensorProduct.snd</code></td>
-    <td><span class="ko">존재하지 않는 대상</span><span class="en">Nonexistent object</span></td>
-    <td><span class="ko">일반 가군엔 <code>V ⊗ W → W</code>가 없습니다. 자유 가군의 <b>augmentation</b>이 올바른 구성입니다.</span>
-        <span class="en">There is no <code>V ⊗ W → W</code> for general modules. The <b>augmentation</b> of a free module is the right construction.</span></td>
-  </tr>
-  <tr>
-    <td><span class="ko">공허한 <code>↔</code> 정리</span><span class="en">A vacuous <code>↔</code></span></td>
-    <td><span class="ko">참이지만 무의미</span><span class="en">True but empty</span></td>
-    <td><span class="ko"><b>타입 검사기가 못 잡습니다.</b> 증명이 가설을 버리는지 사람이 읽어야 합니다.</span>
-        <span class="en"><b>The type checker cannot catch this.</b> A human must notice the proof discards its hypothesis.</span></td>
-  </tr>
-  <tr>
-    <td><span class="ko">“<code>Kl(T_S)</code>는 co-Kleisli 범주다”</span><span class="en">“<code>Kl(T_S)</code> is a co-Kleisli category”</span></td>
-    <td><span class="ko">산문 속 오류</span><span class="en">Prose-level error</span></td>
-    <td><span class="ko">Lean 코드는 <b>맞았습니다</b>. 주석만 틀렸습니다. 형식화는 주석을 검사하지 않습니다 —
-        <b>16 대 256</b> 계산이 잡아냈습니다.</span>
-        <span class="en">The Lean was <b>correct</b>; only the comment was wrong. Formalisation does not check comments —
-        the <b>16 vs 256</b> count did.</span></td>
-  </tr>
-</table>
-<div class="callout">
-  <p style="margin:0">
-    <span class="ko"><b>교훈.</b> 형식화는 타입 오류와 존재하지 않는 대상을 완벽히 잡습니다.
-    <b>공허한 정리와 틀린 산문은 잡지 못합니다.</b> 그래서 이 저장소는 한계까지 정리로 적었습니다.</span>
-    <span class="en"><b>The lesson.</b> Formalisation is perfect at type errors and nonexistent objects.
-    It is <b>blind to vacuous theorems and to wrong prose</b>. That is why this repository states its limitations as theorems.</span>
-  </p>
-</div>
+<div class="callout"><p>
+  <span class="ko"><b>정리하면.</b> 형식화는 타입 오류(1)와 존재하지 않는 대상(2)을 완벽히 잡습니다. 존재하지 않는 동형사상(3)은 차원 세기가 잡습니다. 틀린 산문(4)은 사람만 잡습니다. 도구마다 사각지대가 다르기 때문에, 이 저장소는 정리뿐 아니라 <i>한계</i>도 Lean으로 적었습니다.</span>
+  <span class="en"><b>In sum.</b> Formalisation catches type errors (1) and nonexistent objects (2) perfectly. A nonexistent isomorphism (3) is caught by counting dimensions. Wrong prose (4) is caught only by a person. Because each tool has a different blind spot, this repository states its <i>limits</i> in Lean too, not just its theorems.</span>
+</p></div>
 
-<!-- ───────────────── 5. Limits ───────────────── -->
-<h2 id="limits"><span class="num">5</span><span class="ko">한계 — 주장이 아니라 정리로</span><span class="en">Limits — as theorems, not claims</span></h2>
+<!-- ─────────── 7. What it's really about ─────────── -->
+<h2 id="deeper"><span class="num">7</span><span class="ko">더 깊이 — 이 정리는 무엇에 관한 것인가</span><span class="en">Going deeper — what the theorem is really about</span></h2>
+
 <p>
-  <span class="ko"><code>MuEqPi/Limitations.lean</code>에 있습니다.</span>
-  <span class="en">In <code>MuEqPi/Limitations.lean</code>.</span>
+  <span class="ko">연습 3.2와 5.2에서 두 가지를 눈치챘을 것입니다. 이제 정면으로 말합시다.</span>
+  <span class="en">Exercises 3.2 and 5.2 hinted at two things. Now say them directly.</span>
 </p>
 <div class="card">
+  <h4><span class="ko">① 상태 모나드에 관한 정리가 아닙니다 — 모나드 일반에 관한 정리입니다</span><span class="en">① It is not about the state monad — it is about monads</span></h4>
   <p style="margin:.2rem 0">
-    <span class="ko"><b>① 상태 모나드와 무관하다.</b> <code>Tη ∘ μ</code>의 멱등성은 모나드 법칙의 재진술이라
-    <b>모든</b> lawful 모나드에서 성립합니다.</span>
-    <span class="en"><b>① Not about the state monad.</b> The idempotence of <code>Tη ∘ μ</code> restates a monad law and
-    holds for <b>every</b> lawful monad.</span>
+    <span class="ko"><code>Tη ∘ μ</code>의 멱등성은 법칙 <code>μ ∘ Tη = id</code>의 재진술이므로 모든 lawful 모나드에서 성립합니다. 상태 모나드의 <code>collapse</code>는 그 일반 구성의 인스턴스이고, 그 사실은 <code>rfl</code>로 증명됩니다. 여러분이 5절에서 배운 것은 상태에 대한 특수 사실이 아니라, <b>모든 모나드가 <code>T²</code> 안에 <code>T</code>를 retract로 갖는다</b>는 일반 사실을 한 사례에서 본 것입니다.</span>
+    <span class="en">The idempotence of <code>Tη ∘ μ</code> restates the law <code>μ ∘ Tη = id</code>, so it holds for every lawful monad. The state monad's <code>collapse</code> is an instance of that generic construction, proved by <code>rfl</code>. What §5 taught is not a special fact about state but a general one seen through one example: <b>every monad has <code>T</code> as a retract of <code>T²</code></b>.</span>
     <span class="lean">Lean — <b>mcollapse_idem</b> · <b>St.collapse_eq_mcollapse</b></span>
   </p>
 </div>
 <div class="card">
+  <h4><span class="ko">② 선형대수는 여기서 그림자입니다</span><span class="en">② The linear algebra is a shadow here</span></h4>
   <p style="margin:.2rem 0">
-    <span class="ko"><b>② 선형대수와 무관하다.</b> <code>π_σ</code>는 유한집합 위 멱등 <i>함수</i>의 선형화일 뿐입니다.
-    각 열에 1이 하나인 <code>0–1</code> 행렬이고, 스펙트럼은 자명하게 <code>{0,1}</code>이며,
-    rank와 trace는 고정점 세기입니다. 벡터공간은 장부 정리입니다.</span>
-    <span class="en"><b>② Not about linear algebra.</b> <code>π_σ</code> is the linearisation of an idempotent <i>set map</i>:
-    a <code>0–1</code> matrix with one <code>1</code> per column, spectrum trivially in <code>{0,1}</code>, rank and trace
-    counting fixed points. The vector space is bookkeeping.</span>
+    <span class="ko"><code>π_σ</code>는 집합 위 멱등 <i>함수</i> <code>q ↦ (q.1, σ q.1)</code>의 선형화입니다 — 정확히 그것뿐입니다. 그래서 행렬은 <code>0–1</code>이고, 고유값은 자명하게 <code>0</code>과 <code>1</code>이며, rank와 trace는 고정점 세기입니다. 벡터공간은 새 정보를 더하지 않았습니다. 이것은 실망이 아니라 <b>방향 표지</b>입니다: 선형 모델이 자기 몫의 내용을 갖기 시작하는 곳은, 선형화가 <code>0–1</code> 행렬로 <i>무너지지 않는</i> 모나드입니다.</span>
+    <span class="en"><code>π_σ</code> is the linearisation of the idempotent <i>set map</i> <code>q ↦ (q.1, σ q.1)</code> — exactly that and nothing more. Hence the matrix is <code>0–1</code>, the eigenvalues are trivially <code>0</code> and <code>1</code>, and rank and trace count fixed points. The vector space added no information. That is not a disappointment but a <b>signpost</b>: a linear model begins to carry content of its own exactly where linearisation does <i>not</i> collapse to <code>0–1</code> matrices.</span>
     <span class="lean">Lean — <b>proj_eq_lin_setIdem</b> · <b>fixedPoints_setIdem</b></span>
   </p>
 </div>
+<h3><span class="ko">다음 단계: 분포 모나드</span><span class="en">Next step: the distribution monad</span></h3>
 <p>
-  <span class="ko">선형화가 <code>0–1</code> 행렬로 <b>무너지지 않는</b> 모나드 — Kleisli 사상이 확률행렬이 되는 분포 모나드 —
-  가 선형 모델이 스스로 내용을 갖기 시작하는 곳입니다. 다만 그곳은 빈 땅이 아니라
-  <b>바가 더 높은 땅</b>입니다 (Giry 1982, Fritz 2020).</span>
-  <span class="en">A monad whose linearisation does <b>not</b> collapse to <code>0–1</code> matrices — the distribution monad,
-  whose Kleisli arrows are stochastic matrices — is where a linear model starts to carry content of its own.
-  That is not empty land, though: it is <b>well-populated</b> (Giry 1982, Fritz 2020).</span>
+  <span class="ko">계산이 상태를 결정적으로 바꾸는 대신 <b>확률적으로</b> 바꾼다면, Kleisli 사상은 확률행렬이 되고 (Giry 1982), 선형화는 더 이상 <code>0–1</code>이 아닙니다. 고유값이 진짜 스펙트럼이 되고, 사영은 진짜 기하가 됩니다. 이 방향은 Markov 범주 (Fritz 2020)라는 이름으로 활발히 연구되고 있으며, 이 노트의 틀 — 기계 ⟷ Kleisli ⟷ 행렬 — 이 그대로 이어집니다.</span>
+  <span class="en">If a computation changes the state <b>probabilistically</b> rather than deterministically, Kleisli arrows become stochastic matrices (Giry 1982) and linearisation is no longer <code>0–1</code>. Eigenvalues become a genuine spectrum and the projection genuine geometry. This direction is actively studied under the name Markov categories (Fritz 2020), and the framework of this note — machines ⟷ Kleisli ⟷ matrices — carries over intact.</span>
 </p>
 
-<!-- ───────────────── 6. Run it ───────────────── -->
-<h2 id="run"><span class="num">6</span><span class="ko">직접 검증하기</span><span class="en">Check it yourself</span></h2>
+<details class="ex"><summary><span class="tag">7.1</span><span class="ko">임의의 lawful 모나드에서 <code>e = Tη ∘ μ</code>가 멱등임을 한 줄로 증명하라.</span><span class="en">Prove in one line that <code>e = Tη ∘ μ</code> is idempotent for any lawful monad.</span></summary>
+  <div class="ans"><span class="k">answer</span><br><code>e ∘ e = Tη ∘ (μ ∘ Tη) ∘ μ = Tη ∘ id ∘ μ = e.</code> <span class="ko">쓰인 것은 <code>μ ∘ Tη = id</code>뿐입니다.</span><span class="en">Only <code>μ ∘ Tη = id</code> was used.</span></div>
+</details>
+<details class="ex"><summary><span class="tag">7.2</span><span class="ko">확률행렬의 경우, 5절의 “rank는 σ에 무관”이 여전히 성립할까?</span><span class="en">For stochastic matrices, does §5's “rank is independent of σ” still hold?</span></summary>
+  <div class="ans"><span class="k">answer</span><br>
+  <span class="ko">일반적으로 <b>아닙니다.</b> 결정적 경우 rank가 고정점 세기로 떨어진 것은 행렬이 <code>0–1</code>이기 때문입니다. 확률행렬은 서로 다른 열이 선형종속일 수 있어 rank가 전이 구조에 의존합니다. 바로 그 의존성이 “선형 모델이 내용을 갖는다”는 말의 뜻입니다.</span>
+  <span class="en">In general <b>no</b>. Rank reduced to a fixed-point count in the deterministic case because the matrix was <code>0–1</code>. Stochastic matrices can have linearly dependent columns, so rank depends on the transition structure. That dependence is precisely what “the linear model carries content” means.</span></div>
+</details>
+
+<!-- ─────────── 8. History ─────────── -->
+<h2 id="history"><span class="num">8</span><span class="ko">이 생각들은 어떻게 발전했나</span><span class="en">How these ideas developed</span></h2>
+<p class="sub"><span class="ko">굵은 점은 이 노트가 직접 기대는 마디입니다.</span><span class="en">Filled dots are the nodes this note rests on directly.</span></p>
+<ol class="tl">
+  <li class="key"><span class="yr">1955</span><span class="dot"></span><div class="what">Mealy — sequential circuits</div>
+    <div class="why"><span class="ko"><code>X × S → Y × S</code>. 2절의 언어. 모나드보다 10년 앞섭니다.</span><span class="en"><code>X × S → Y × S</code>. The language of §2, a decade before monads.</span></div></li>
+  <li><span class="yr">1962</span><span class="dot"></span><div class="what">Lawvere — the category <code>Stoch</code></div>
+    <div class="why"><span class="ko">확률 쪽 사례가 Kleisli 범주 일반보다 먼저 나왔습니다.</span><span class="en">The probabilistic instance came before Kleisli categories in general.</span></div></li>
+  <li class="key"><span class="yr">1965</span><span class="dot"></span><div class="what">Kleisli — <i>Every standard construction is induced by a pair of adjoint functors</i></div>
+    <div class="why"><span class="ko"><code>Kl(GF)(X,Y) ≅ C(FX,FY)</code>. 3절이 기계와 Kleisli 사상을 잇는 근거. 같은 해 Eilenberg–Moore가 독립적으로 대수 범주를 구성.</span><span class="en"><code>Kl(GF)(X,Y) ≅ C(FX,FY)</code> — what lets §3 identify machines with Kleisli arrows. Eilenberg–Moore gave the algebra category independently the same year.</span></div></li>
+  <li><span class="yr">1968</span><span class="dot"></span><div class="what">Karoubi — idempotent completion</div>
+    <div class="why"><span class="ko">split idempotent가 표준 도구가 됩니다. 3절의 <code>e</code>가 사는 곳.</span><span class="en">Split idempotents become standard. Where §3's <code>e</code> lives.</span></div></li>
+  <li><span class="yr">1982</span><span class="dot"></span><div class="what">Giry — <code>Stoch</code> as a Kleisli category</div>
+    <div class="why"><span class="ko">7절의 다음 단계.</span><span class="en">§7's next step.</span></div></li>
+  <li class="key"><span class="yr">1991</span><span class="dot"></span><div class="what">Moggi — <i>Notions of computation and monads</i></div>
+    <div class="why"><span class="ko">3절의 언어가 프로그래밍 의미론의 표준이 됩니다. 이듬해 Wadler → Haskell.</span><span class="en">§3's language becomes standard programming semantics; Wadler → Haskell the next year.</span></div></li>
+  <li><span class="yr">2003<br>–08</span><span class="dot"></span><div class="what">Pattinson; Bonsangue–Rutten–Silva</div>
+    <div class="why"><span class="ko">Mealy 기계를 coalgebra로 보는 관점.</span><span class="en">Mealy machines as coalgebras.</span></div></li>
+  <li class="key"><span class="yr">2016</span><span class="dot"></span><div class="what">Oliveira &amp; Miraldo — <i>Keep definition, change category</i></div>
+    <div class="why"><span class="ko">“Mealy 기계 = 상태 모나드의 Kleisli 사상”을 명시. 2절과 3절이 같은 것임을 문헌이 말하는 자리.</span><span class="en">States “Mealy machines are state-monad Kleisli arrows” explicitly — where the literature says §2 and §3 are the same.</span></div></li>
+  <li><span class="yr">2020</span><span class="dot"></span><div class="what">Fritz — Markov categories</div>
+    <div class="why"><span class="ko">7절의 방향을 현대적으로 정리.</span><span class="en">The modern synthesis of §7's direction.</span></div></li>
+  <li><span class="yr">2025</span><span class="dot"></span><div class="what">Effectful Mealy Machines (CALCO); Markov kernels in Mathlib</div>
+    <div class="why"><span class="ko">여전히 활발한 분야입니다.</span><span class="en">Still an active area.</span></div></li>
+</ol>
+
+<!-- ─────────── 9. Check it ─────────── -->
+<h2 id="run"><span class="num">9</span><span class="ko">직접 검증하기</span><span class="en">Check it yourself</span></h2>
 <div class="eq">git clone https://github.com/Kairose-master/mu_eq_pi
 cd mu_eq_pi
 lake exe cache get
 lake build</div>
-<p>
-  <span class="ko">공리 흔적을 직접 감사하려면:</span>
-  <span class="en">To audit the axiom footprint yourself:</span>
-</p>
 <div class="eq">import MuEqPi
-#print axioms MuEqPi.mu_eq_pi
--- propext, Classical.choice, Quot.sound</div>
-<p>
-  <span class="ko"><code>sorry</code> 없음, 커스텀 공리 없음. Lean 4 <code>v4.32.1</code> + mathlib 동일 태그에 고정되어 있습니다.</span>
-  <span class="en">No <code>sorry</code>, no custom axioms. Pinned to Lean 4 <code>v4.32.1</code> and the matching mathlib tag.</span>
-</p>
+#print axioms MuEqPi.mu_eq_pi      -- propext, Classical.choice, Quot.sound</div>
+<p><span class="ko"><code>sorry</code> 없음, 커스텀 공리 없음. Lean 4 <code>v4.32.1</code>과 같은 태그의 mathlib에 고정되어 있습니다.</span>
+<span class="en">No <code>sorry</code>, no custom axioms. Pinned to Lean 4 <code>v4.32.1</code> and the matching mathlib tag.</span></p>
 
 <footer>
   <p>
-    <span class="ko"><a href="https://github.com/Kairose-master/mu_eq_pi">저장소</a> ·
-    <a href="./pdf/state-collapse.tex">형식 부록 v2.0 (LaTeX)</a> ·
-    <a href="./errata.html">정오표</a> · MIT</span>
-    <span class="en"><a href="https://github.com/Kairose-master/mu_eq_pi">Repository</a> ·
-    <a href="./pdf/state-collapse.tex">Formal appendix v2.0 (LaTeX)</a> ·
-    <a href="./errata.html">Errata</a> · MIT</span>
+    <span class="ko"><b>이 저장소에 관하여.</b> 여기서 새로운 수학은 주장하지 않습니다 — 8절의 계보가 모든 재료의 출처입니다. 주장하는 것은 두 가지입니다: 전부 기계 검증되었다는 것, 그리고 7절의 한계까지 정리로 증명했다는 것. 이전 버전의 수정 내역은 <a href="./errata.html">정오표</a>에 있습니다.</span>
+    <span class="en"><b>About this repository.</b> No new mathematics is claimed — the genealogy in §8 is the source of every ingredient. Two things are claimed: that everything is machine-checked, and that the limits in §7 are proved as theorems. Corrections to earlier versions are recorded in the <a href="./errata.html">errata</a>.</span>
   </p>
+  <p><a href="https://github.com/Kairose-master/mu_eq_pi">github.com/Kairose-master/mu_eq_pi</a> · <a href="./pdf/state-collapse.tex"><span class="ko">형식 부록 (LaTeX)</span><span class="en">Formal appendix (LaTeX)</span></a> · MIT</p>
   <p><span class="ko">출처</span><span class="en">Sources</span></p>
   <ul class="src">
-    <li>Mealy, <i>A method for synthesizing sequential circuits</i>, Bell System Tech. J. (1955) · <a href="https://ncatlab.org/nlab/show/Mealy+machine">nLab</a></li>
-    <li>Kleisli, <i>Every standard construction is induced by a pair of adjoint functors</i>, Proc. AMS 16(3):544–546 (1965) · <a href="https://www.jstor.org/stable/2034693">JSTOR</a></li>
-    <li><a href="https://en.wikipedia.org/wiki/Karoubi_envelope">Karoubi envelope</a> · <a href="https://ncatlab.org/nlab/show/Karoubi+envelope">nLab</a></li>
+    <li>Mealy, <i>A method for synthesizing sequential circuits</i>, Bell Syst. Tech. J. (1955) · <a href="https://ncatlab.org/nlab/show/Mealy+machine">nLab</a></li>
+    <li>Kleisli, <i>Every standard construction is induced by a pair of adjoint functors</i>, Proc. AMS 16(3) (1965) · <a href="https://www.jstor.org/stable/2034693">JSTOR</a> · <a href="https://ncatlab.org/nlab/show/Kleisli+category">nLab</a></li>
+    <li><a href="https://ncatlab.org/nlab/show/Karoubi+envelope">Karoubi envelope (nLab)</a></li>
     <li>Giry, <i>A categorical approach to probability theory</i> (1982) · <a href="https://ncatlab.org/nlab/show/Markov+category">Markov category (nLab)</a></li>
     <li>Moggi, <i>Notions of computation and monads</i>, Inf. Comput. 93(1) (1991)</li>
     <li>Oliveira &amp; Miraldo, <i>“Keep definition, change category”</i>, JLAMP (2016) · <a href="https://cs.ioc.ee/~tarmo/tsem15/oliveira2104-slides.pdf">slides</a></li>
     <li>Fritz, <i>A synthetic approach to Markov kernels…</i> (2020) · <a href="https://arxiv.org/pdf/1908.07021">arXiv</a></li>
     <li><a href="https://drops.dagstuhl.de/storage/00lipics/lipics-vol342-calco2025/html/LIPIcs.CALCO.2025.1/LIPIcs.CALCO.2025.1.html">Effectful Mealy Machines</a>, CALCO 2025 · <a href="https://arxiv.org/pdf/2510.04070">Markov kernels in Mathlib</a> (2025)</li>
-    <li><a href="https://ncatlab.org/nlab/show/state+monad">state monad (nLab)</a> · <a href="https://ncatlab.org/nlab/show/Kleisli+category">Kleisli category (nLab)</a></li>
+    <li><a href="https://ncatlab.org/nlab/show/state+monad">state monad (nLab)</a></li>
   </ul>
 </footer>
-
 </div>
 
 <script>
 "use strict";
-
-/* ---------- language & theme ---------- */
 function setLang(l){
-  document.documentElement.lang = l;
-  document.getElementById("langko").setAttribute("aria-pressed", String(l==="ko"));
-  document.getElementById("langen").setAttribute("aria-pressed", String(l==="en"));
-  try{ localStorage.setItem("mueqpi-lang", l); }catch(e){}
+  document.documentElement.lang=l;
+  document.getElementById("langko").setAttribute("aria-pressed",String(l==="ko"));
+  document.getElementById("langen").setAttribute("aria-pressed",String(l==="en"));
+  document.title = l==="ko" ? "모나드 평탄화, 세 가지 언어로" : "Monad flattening, in three languages";
+  try{localStorage.setItem("mueqpi-lang",l);}catch(e){}
   renderAll();
 }
 function toggleTheme(){
-  var cur = document.documentElement.getAttribute("data-theme");
-  var mqDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-  var next = cur ? (cur==="dark"?"light":"dark") : (mqDark?"light":"dark");
-  document.documentElement.setAttribute("data-theme", next);
-  try{ localStorage.setItem("mueqpi-theme", next); }catch(e){}
+  var cur=document.documentElement.getAttribute("data-theme");
+  var mqDark=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;
+  var next=cur?(cur==="dark"?"light":"dark"):(mqDark?"light":"dark");
+  document.documentElement.setAttribute("data-theme",next);
+  try{localStorage.setItem("mueqpi-theme",next);}catch(e){}
 }
-(function initPrefs(){
-  var l="ko", t=null;
-  try{ l = localStorage.getItem("mueqpi-lang") || "ko"; t = localStorage.getItem("mueqpi-theme"); }catch(e){}
-  if(t) document.documentElement.setAttribute("data-theme", t);
-  document.documentElement.lang = l;
-  document.addEventListener("DOMContentLoaded", function(){ setLang(l); });
-})();
-function isKo(){ return document.documentElement.lang === "ko"; }
+(function(){var l="ko",t=null;try{l=localStorage.getItem("mueqpi-lang")||"ko";t=localStorage.getItem("mueqpi-theme");}catch(e){}
+  if(t)document.documentElement.setAttribute("data-theme",t);document.documentElement.lang=l;
+  document.addEventListener("DOMContentLoaded",function(){setLang(l);});})();
+function isKo(){return document.documentElement.lang==="ko";}
 
-/* ---------- widget A : flattening is substitution ---------- */
-var s1 = true, s2 = true;
-function seg(id, cur, setter){
-  var el = document.getElementById(id);
-  el.innerHTML = "";
-  [false,true].forEach(function(v){
-    var b = document.createElement("button");
-    b.textContent = v ? "true" : "false";
-    b.setAttribute("aria-pressed", String(v===cur));
-    b.onclick = function(){ setter(v); renderA(); };
-    el.appendChild(b);
-  });
-}
+/* A */
+var s1=true,s2=true;
+function seg(id,cur,setter){var el=document.getElementById(id);el.innerHTML="";
+  [false,true].forEach(function(v){var b=document.createElement("button");b.textContent=v?"true":"false";
+    b.setAttribute("aria-pressed",String(v===cur));b.onclick=function(){setter(v);renderA();};el.appendChild(b);});}
 function renderA(){
-  seg("segS1", s1, function(v){ s1=v; });
-  seg("segS2", s2, function(v){ s2=v; });
-  var sigma = !s1;                    // sigma(x, s1) = not s1
-  var onGraph = (s2 === sigma);
-  var L = isKo();
-  var out = [];
-  out.push('<span class="k">'+(L?"겹친 배치 (자유 슬롯 포함)":"doubled configuration (free slot)")+'</span>');
-  out.push('  ((x, '+s1+'), <span class="'+(onGraph?"keep":"gone")+'">'+s2+'</span>)');
-  out.push('<span class="k">'+(L?"전이함수  σ(x, s₁) = ¬s₁  =":"transition  σ(x, s₁) = ¬s₁  =")+'</span> <span class="hl">'+sigma+'</span>');
-  out.push('<span class="k">'+(L?"사영  π_σ  — 자유 슬롯을 덮어씀":"projection  π_σ  — overwrite the free slot")+'</span>');
-  out.push('  ((x, '+s1+'), <span class="hl">'+sigma+'</span>)');
-  out.push('<span class="k">'+(L?"안쪽 단계를 그 상태에서 실행":"run the inner stage from that state")+'</span>');
-  out.push('  expand t  ↦  ('+sigma+', '+sigma+')');
-  out.push('<span class="k">'+(L?"평탄화한 결과와 비교":"compare with the flattened computation")+'</span>');
-  out.push('  μ (t x) '+s1+'  =  ('+sigma+', '+sigma+')   <span class="keep">✓ '+(L?"일치":"match")+'</span>');
-  out.push("");
-  out.push(onGraph
-    ? '<span class="keep">'+(L?"s₂가 이미 그래프 위에 있습니다 — π_σ가 아무것도 하지 않습니다 (고정점).":"s₂ is already on the graph — π_σ does nothing here (a fixed point).")+'</span>'
-    : '<span class="gone">'+(L?"s₂ = "+s2+" 는 버려졌습니다 — 이것이 평탄화가 파괴하는 정보입니다.":"s₂ = "+s2+" was discarded — this is the information flattening destroys.")+'</span>');
-  document.getElementById("outA").innerHTML = out.join("\n");
+  seg("segS1",s1,function(v){s1=v;});seg("segS2",s2,function(v){s2=v;});
+  var sigma=!s1,onGraph=(s2===sigma),L=isKo(),o=[];
+  o.push('<span class="k">'+(L?"겹친 배치 (자유 슬롯 포함)":"doubled configuration (free slot)")+'</span>');
+  o.push('  ((•, '+s1+'), <span class="'+(onGraph?"keep":"gone")+'">'+s2+'</span>)');
+  o.push('<span class="k">'+(L?"전이함수  σ(•, s₁) = ¬s₁  =":"transition  σ(•, s₁) = ¬s₁  =")+'</span> <span class="hl">'+sigma+'</span>');
+  o.push('<span class="k">'+(L?"사영  π_σ  — 자유 슬롯을 덮어씀":"projection  π_σ  — overwrite the free slot")+'</span>');
+  o.push('  ((•, '+s1+'), <span class="hl">'+sigma+'</span>)');
+  o.push('<span class="k">'+(L?"안쪽 단계를 그 상태에서 실행":"run the inner stage from that state")+'</span>');
+  o.push('  expand t  ↦  ('+sigma+', '+sigma+')');
+  o.push('<span class="k">'+(L?"평탄화한 결과와 비교":"compare with the flattened computation")+'</span>');
+  o.push('  μ (t •) '+s1+'  =  ('+sigma+', '+sigma+')   <span class="keep">✓ '+(L?"일치":"match")+'</span>');
+  o.push("");
+  o.push(onGraph
+    ?'<span class="keep">'+(L?"s₂가 이미 그래프 위에 있습니다 — π_σ는 아무것도 하지 않습니다 (고정점).":"s₂ is already on the graph — π_σ does nothing here (a fixed point).")+'</span>'
+    :'<span class="gone">'+(L?"s₂ = "+s2+" 는 버려졌습니다 — 평탄화가 파괴하는 정보입니다.":"s₂ = "+s2+" was discarded — the information flattening destroys.")+'</span>');
+  document.getElementById("outA").innerHTML=o.join("\n");
 }
 
-/* ---------- widget B : the matrix of pi_sigma ---------- */
-var XS = ["a","b"], SS = [0,1];
-var sigmaMap = {"a,0":0, "a,1":1, "b,0":1, "b,1":0};
-function dconf(){
-  var d = [];
-  XS.forEach(function(x){ SS.forEach(function(a){ SS.forEach(function(b){ d.push([x,a,b]); }); }); });
-  return d;
-}
+/* B */
+var XS=["a","b"],SS=[0,1],sigmaMap={"a,0":0,"a,1":1,"b,0":1,"b,1":0};
+function dconf(){var d=[];XS.forEach(function(x){SS.forEach(function(a){SS.forEach(function(b){d.push([x,a,b]);});});});return d;}
 function renderB(){
-  var L = isKo();
-  var ctl = document.getElementById("sigmaCtl");
-  ctl.innerHTML = "";
-  XS.forEach(function(x){ SS.forEach(function(a){
-    var key = x+","+a;
-    var row = document.createElement("div"); row.className="row";
-    var lb = document.createElement("span"); lb.className="lbl";
-    lb.style.fontFamily="var(--mono)"; lb.textContent = "σ("+x+","+a+")";
-    row.appendChild(lb);
-    var sg = document.createElement("span"); sg.className="seg";
-    SS.forEach(function(v){
-      var b=document.createElement("button"); b.textContent=v;
-      b.setAttribute("aria-pressed", String(sigmaMap[key]===v));
-      b.onclick=function(){ sigmaMap[key]=v; renderB(); };
-      sg.appendChild(b);
-    });
-    row.appendChild(sg); ctl.appendChild(row);
-  });});
-
-  var D = dconf(), n = D.length;
-  var idx = {}; D.forEach(function(q,i){ idx[q.join(",")] = i; });
-  var img = D.map(function(q){ return idx[[q[0], q[1], sigmaMap[q[0]+","+q[1]]].join(",")]; });
-
-  var g = document.getElementById("matrix");
-  g.style.gridTemplateColumns = "repeat("+n+", 26px)";
-  g.innerHTML = "";
-  for(var r=0;r<n;r++){
-    for(var c=0;c<n;c++){
-      var one = (img[c]===r);
-      var cell = document.createElement("div");
-      cell.className = "cell" + (one?" one":"") + (one && r===c ? " fix":"");
-      cell.textContent = one ? "1" : "0";
-      cell.title = "π( δ_" + D[c].join("") + " ) = δ_" + D[img[c]].join("");
-      g.appendChild(cell);
-    }
-  }
-  var rank = new Set(img).size;
-  var trace = img.filter(function(v,i){ return v===i; }).length;
-  document.getElementById("statB").innerHTML =
-      '<div>dim = <b>'+n+'</b></div>'
-    + '<div>rank = <b>'+rank+'</b></div>'
-    + '<div>tr = <b>'+trace+'</b></div>'
-    + '<div>dim ker = <b>'+(n-rank)+'</b></div>'
-    + '<div style="color:var(--muted)">'+(L?"|X|·|S| = 4 — σ와 무관":"|X|·|S| = 4 — independent of σ")+'</div>';
+  var L=isKo(),ctl=document.getElementById("sigmaCtl");ctl.innerHTML="";
+  XS.forEach(function(x){SS.forEach(function(a){var key=x+","+a,row=document.createElement("div");row.className="row";
+    var lb=document.createElement("span");lb.className="lbl";lb.style.fontFamily="var(--mono)";lb.textContent="σ("+x+","+a+")";row.appendChild(lb);
+    var sg=document.createElement("span");sg.className="seg";
+    SS.forEach(function(v){var b=document.createElement("button");b.textContent=v;b.setAttribute("aria-pressed",String(sigmaMap[key]===v));
+      b.onclick=function(){sigmaMap[key]=v;renderB();};sg.appendChild(b);});
+    row.appendChild(sg);ctl.appendChild(row);});});
+  var D=dconf(),n=D.length,idx={};D.forEach(function(q,i){idx[q.join(",")]=i;});
+  var img=D.map(function(q){return idx[[q[0],q[1],sigmaMap[q[0]+","+q[1]]].join(",")];});
+  var g=document.getElementById("matrix");g.style.gridTemplateColumns="repeat("+n+", 26px)";g.innerHTML="";
+  for(var r=0;r<n;r++)for(var c=0;c<n;c++){var one=(img[c]===r),cell=document.createElement("div");
+    cell.className="cell"+(one?" one":"")+(one&&r===c?" fix":"");cell.textContent=one?"1":"0";
+    cell.title="π( δ_"+D[c].join("")+" ) = δ_"+D[img[c]].join("");g.appendChild(cell);}
+  var rank=new Set(img).size,trace=img.filter(function(v,i){return v===i;}).length;
+  document.getElementById("statB").innerHTML='<div>dim = <b>'+n+'</b></div><div>rank = <b>'+rank+'</b></div><div>tr = <b>'+trace+'</b></div><div>dim ker = <b>'+(n-rank)+'</b></div>'
+    +'<div style="color:var(--muted)">'+(L?"|X|·|S| = 4 — σ와 무관":"|X|·|S| = 4 — independent of σ")+'</div>';
 }
 
-/* ---------- widget C : the dimension counterexample ---------- */
+/* C */
 function renderC(){
-  var L = isKo();
-  var s = +document.getElementById("cS").value;
-  var x = +document.getElementById("cX").value;
-  document.getElementById("cSv").textContent = s;
-  document.getElementById("cXv").textContent = x;
-  var lhs = s * Math.pow(s*x, s);         // dim F(T_S X) = |S| * |T_S X|
-  var rhs = s*s*x;                        // dim (R^S (x) R^S) (x) R^X
-  var ok = (lhs === rhs);
-  var out = [];
-  out.push('<span class="k">|T_S X| = (|S|·|X|)^|S| =</span> <span class="hl">'+Math.pow(s*x,s)+'</span>');
-  out.push('<span class="k">dim F(T_S X)    = |S|·|T_S X| =</span> <span class="hl">'+lhs+'</span>');
-  out.push('<span class="k">dim (ℝ^S⊗ℝ^S)⊗ℝ^X = |S|²·|X|  =</span> <span class="hl">'+rhs+'</span>');
-  out.push("");
-  out.push(ok
-    ? '<span class="k">'+(L?"이 값에서는 우연히 같습니다 — 동형이 있다는 뜻은 아닙니다.":"equal at these values by coincidence — that is not an isomorphism.")+'</span>'
-    : '<span class="gone">'+lhs+' ≠ '+rhs+'</span>  <span class="keep">'+(L?"→ 그런 동형사상은 없습니다":"→ no such isomorphism exists")+'</span>');
-  out.push("");
-  out.push('<span class="k">'+(L?"올바른 무대 — 겹친 배치 공간":"the correct stage — the doubled configuration space")+'</span>');
-  out.push('  dim ℝ[(X×S)×S] = |X|·|S|² = <span class="hl">'+(x*s*s)+'</span>   rank π_σ = <span class="hl">'+(x*s)+'</span>   dim ker = <span class="hl">'+(x*s*s - x*s)+'</span>');
-  document.getElementById("outC").innerHTML = out.join("\n");
+  var L=isKo(),s=+document.getElementById("cS").value,x=+document.getElementById("cX").value;
+  document.getElementById("cSv").textContent=s;document.getElementById("cXv").textContent=x;
+  var lhs=s*Math.pow(s*x,s),rhs=s*s*x,ok=(lhs===rhs),o=[];
+  o.push('<span class="k">|T_S X| = (|S|·|X|)^|S| =</span> <span class="hl">'+Math.pow(s*x,s)+'</span>');
+  o.push('<span class="k">dim F(T_S X)    = |S|·|T_S X| =</span> <span class="hl">'+lhs+'</span>');
+  o.push('<span class="k">dim (ℝ^S⊗ℝ^S)⊗ℝ^X = |S|²·|X|  =</span> <span class="hl">'+rhs+'</span>');
+  o.push("");
+  o.push(ok?'<span class="k">'+(L?"이 값에서는 우연히 같습니다 — 동형이 있다는 뜻은 아닙니다.":"equal at these values by coincidence — that is not an isomorphism.")+'</span>'
+    :'<span class="gone">'+lhs+' ≠ '+rhs+'</span>  <span class="keep">'+(L?"→ 그런 동형사상은 없습니다":"→ no such isomorphism exists")+'</span>');
+  o.push("");
+  o.push('<span class="k">'+(L?"올바른 무대 — 겹친 배치 공간":"the correct stage — the doubled configuration space")+'</span>');
+  o.push('  dim ℝ[(X×S)×S] = |X|·|S|² = <span class="hl">'+(x*s*s)+'</span>   rank π_σ = <span class="hl">'+(x*s)+'</span>   dim ker = <span class="hl">'+(x*s*s-x*s)+'</span>');
+  document.getElementById("outC").innerHTML=o.join("\n");
 }
-
-/* ---------- boot ---------- */
-function renderAll(){ renderA(); renderB(); renderC(); }
-document.addEventListener("DOMContentLoaded", function(){
-  document.getElementById("cS").addEventListener("input", renderC);
-  document.getElementById("cX").addEventListener("input", renderC);
-  renderAll();
-});
+function renderAll(){renderA();renderB();renderC();}
+document.addEventListener("DOMContentLoaded",function(){
+  document.getElementById("cS").addEventListener("input",renderC);
+  document.getElementById("cX").addEventListener("input",renderC);renderAll();});
 </script>
 </body>
 </html>
