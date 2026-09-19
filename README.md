@@ -3,9 +3,35 @@
 A Lean 4 / mathlib formalisation of the sense in which the state monad's
 multiplication `μ` is an **idempotent projection**.
 
-Everything below is machine-checked. There are no `sorry`s and no custom axioms:
-every theorem listed depends only on Lean's three standard axioms (`propext`,
+> **📖 Interactive learning note (KO / EN):**
+> **<https://kairose-master.github.io/mu_eq_pi/>**
+
+**This repository claims no novelty.** Every ingredient below is textbook, and
+§ *Provenance* names the paper and the year for each one. What it does claim is
+narrower and checkable: everything is **machine-checked**, and the
+**limitations are proved too**. There are no `sorry`s and no custom axioms —
+every theorem depends only on Lean's three standard axioms (`propext`,
 `Classical.choice`, `Quot.sound`).
+
+---
+
+## Provenance
+
+The result is about seventy years old. Each step below rests on a specific,
+named piece of the literature.
+
+| Year | Who | What it gives us |
+|---|---|---|
+| **1955** | Mealy | `X × S → Y × S` — the category `𝒮_S` formalised here *is* the category of **Mealy machines** |
+| 1962 | Lawvere | the category `Stoch`, before Kleisli categories existed in general |
+| **1965** | **Kleisli** | `Kl(G∘F)(X,Y) ≅ C(FX,FY)` — the theorem linking state-monad Kleisli arrows to Mealy machines (Eilenberg–Moore, independently, the same year) |
+| 1968 | Karoubi | idempotent completion; where the idempotence of `Tη ∘ μ` lives |
+| 1982 | Giry | `Stoch` as a Kleisli category — the distribution monad |
+| **1991** | **Moggi** | *Notions of computation and monads* — the state monad as the standard semantics of effects |
+| 2003–08 | Pattinson; Bonsangue–Rutten–Silva | Mealy machines as coalgebras of `(B × S)^A` |
+| **2016** | **Oliveira & Miraldo** | *Keep definition, change category* — states explicitly that **Mealy machines are the Kleisli morphisms of the state monad** |
+| 2020 | Fritz | Markov categories |
+| 2025 | CALCO; Degenne | *Effectful Mealy Machines*; Markov kernels in mathlib — the area is still active |
 
 ---
 
@@ -41,7 +67,12 @@ Kl(T_S)  ≅  𝒮_S ,   where 𝒮_S(X, Y) = (X × S → Y × S)
 ```
 
 identity on objects, bijective on hom-sets, carrying Kleisli composition to
-ordinary composition of functions (`uncur`, `instIsEquivalenceUncur`). `𝒮_S` is
+ordinary composition of functions (`uncur`, `instIsEquivalenceUncur`).
+
+`𝒮_S(X, Y)` is the set of **Mealy machines** with input `X`, output `Y` and
+state set `S` (Mealy 1955). That state-monad Kleisli arrows *are* Mealy machines
+is stated explicitly in Oliveira & Miraldo (2016); the underlying bijection is
+Kleisli's 1965 theorem. `𝒮_S` is
 the full image of the functor `- × S : Set → Set`: the identification is the
 standard one for the Kleisli category of a monad `G ∘ F` arising from an
 adjunction `F ⊣ G`, here `(- × S) ⊣ (S ⇒ -)`, under which

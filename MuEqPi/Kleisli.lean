@@ -20,6 +20,12 @@ in a finite-dimensional vector space. After uncurrying it is a function between
 the *plain sets* `X × S` and `Y × S`, and functions between sets linearise: this
 is the free-vector-space functor, used in `MuEqPi.Linearization`.
 
+A hom-set of `𝒮_S` is exactly the set of **Mealy machines** with input `X`,
+output `Y` and state set `S` (Mealy 1955); that state-monad Kleisli arrows are
+Mealy machines is stated explicitly in Oliveira & Miraldo, *Keep definition,
+change category*, JLAMP (2016). Nothing here is new; the point of the file is
+that the identification is proved rather than asserted.
+
 Concretely, `Kl(T_S)` is the full image of the functor `- × S`. This is the
 standard identification of the Kleisli category of a monad `G ∘ F` coming from an
 adjunction `F ⊣ G` — here `(- × S) ⊣ (S ⇒ -)` — under which
